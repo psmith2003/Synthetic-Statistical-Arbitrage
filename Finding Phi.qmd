@@ -1,0 +1,69 @@
+---
+title: "Finding Phi"
+format: html
+editor: visual
+---
+
+```{r}
+library(tidyverse)
+```
+
+```{r}
+
+# Folder containing all your CSVs
+folder_path <- "C:/Users/Parker Smith/Desktop/crypto/data 2"
+
+# Get a list of all CSV files in the folder
+files <- list.files(folder_path, pattern = "\\.csv$", full.names = TRUE)
+
+# Read all CSVs and combine them into one data frame
+exclude = c('USDT', 'USDC', 'WBTC')
+crypto_data <- files %>%
+  lapply(read.csv) %>%
+  bind_rows() %>% 
+  filter(!Symbol %in% exclude)
+
+# Check the first few rows
+head(crypto_data)
+
+```
+
+```{r}
+crypto_wide <- crypto_data %>%
+  select(Symbol, Date, Close) %>%          # Keep only relevant columns
+  pivot_wider(
+    names_from = Symbol,                   # Column names come from the coin symbol
+    values_from = Close                    # Values come from the Close column
+  ) %>%
+  arrange(Date) %>% 
+  drop_na()
+
+crypto_wide$Date = as.Date(crypto_wide$Date)
+```
+
+
+Now that the df is made: check the data
+```{r}
+# Convert wide to long
+crypto_long <- crypto_wide %>%
+  pivot_longer(
+    cols = -Date,           # everything except Date
+    names_to = "Symbol",    # new column for coin symbols
+    values_to = "Close"     # values go into Close
+  )
+
+# Plot all coins
+ggplot(crypto_long, aes(x = Date, y = Close, color = Symbol)) +
+  geom_line() +
+  labs(
+    title = "Crypto Closing Prices Over Time",
+    x = "Date",
+    y = "Close Price (USD)"
+  ) +
+  theme_minimal() +
+  scale_y_log10()
+  
+```
+
+
+
