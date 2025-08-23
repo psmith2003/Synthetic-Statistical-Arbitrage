@@ -22,10 +22,6 @@ crypto_data <- files %>%
   lapply(read.csv) %>%
   bind_rows() %>% 
   filter(!Symbol %in% exclude)
-
-# Check the first few rows
-head(crypto_data)
-
 ```
 
 ```{r}
@@ -65,5 +61,31 @@ ggplot(crypto_long, aes(x = Date, y = Close, color = Symbol)) +
   
 ```
 
+```{r}
+linear_model = lm(BTC ~ . + 0
+                  -Date
+                  -XLM
+                  -MIOTA
+                  -LINK
+                  -XEM
+                  -DOT
+                  -ATOM
+                  -XRP
+                  , data = crypto_wide)
+summary(linear_model)
+```
+```{r}
+PHI <- data.frame(
+  Date = crypto_wide$Date,
+  residuals = residuals(linear_model)
+)
+```
+
+
+```{r}
+ggplot(PHI, aes(y = residuals, x = Date)) +
+  geom_line() +
+  geom_hline(yintercept = 0, color="blue")
+```
 
 
