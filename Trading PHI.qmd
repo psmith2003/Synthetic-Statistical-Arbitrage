@@ -1,0 +1,71 @@
+---
+title: "Trading PHI"
+format: html
+editor: visual
+---
+
+
+```{r}
+library(tidyverse)
+```
+
+```{r}
+
+# Folder containing all your CSVs
+folder_path <- "C:/Users/Parker Smith/Desktop/crypto/data 2"
+
+# Get a list of all CSV files in the folder
+files <- list.files(folder_path, pattern = "\\.csv$", full.names = TRUE)
+
+# Read all CSVs and combine them into one data frame
+exclude = c('USDT', 'USDC', 'WBTC')
+crypto_data <- files %>%
+  lapply(read.csv) %>%
+  bind_rows() %>% 
+  filter(!Symbol %in% exclude)
+```
+
+```{r}
+crypto_wide <- crypto_data %>%
+  select(Symbol, Date, Close) %>%          # Keep only relevant columns
+  pivot_wider(
+    names_from = Symbol,                   # Column names come from the coin symbol
+    values_from = Close                    # Values come from the Close column
+  ) %>%
+  arrange(Date) %>% 
+  drop_na()
+
+crypto_wide$Date = as.Date(crypto_wide$Date)
+```
+
+Finding PHI for each coin
+```{r}
+tickers = setdiff(colnames(crypto_wide), "Date")
+all_PHI = data.frame(Date = crypto_wide$Date) # Start off with Dates
+
+for (i in tickers){
+  temp_df = auto_lm(crypto_wide, i, alpha = 0.05)
+  all_PHI[[i]] = residuals(temp_df)
+}
+  
+```
+
+```{r}
+# Check data
+ggplot(all_PHI, aes(y = BTC, x = Date)) +
+  geom_line() +
+  geom_hline(yintercept = 0, color="blue")
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
