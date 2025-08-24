@@ -40,6 +40,29 @@ crypto_wide$Date = as.Date(crypto_wide$Date)
 
 Finding PHI for each coin
 ```{r}
+auto_lm <- function(df, response, alpha = 0.05) {
+  # start with all predictors except response and Date
+  predictors <- setdiff(names(df), c(response, "Date"))
+  
+  formula <- as.formula(paste(response, "~", paste(predictors, collapse = " + "), "+ 0"))
+  model <- lm(formula, data = df)
+  
+  repeat {
+    pvals <- summary(model)$coefficients[, 4]  # no intercept anymore
+    max_p <- max(pvals, na.rm = TRUE)
+    
+    if (max_p < alpha) break  # stop if all are significant
+    
+    worst_var <- names(which.max(pvals))
+    predictors <- setdiff(predictors, worst_var)
+    
+    formula <- as.formula(paste(response, "~", paste(predictors, collapse = " + "), "+ 0"))
+    model <- lm(formula, data = df)
+  }
+  
+  return(model)
+}
+
 tickers = setdiff(colnames(crypto_wide), "Date")
 all_PHI = data.frame(Date = crypto_wide$Date) # Start off with Dates
 
@@ -58,7 +81,38 @@ ggplot(all_PHI, aes(y = BTC, x = Date)) +
 ```
 
 
+Find AR model parameters
+```{r}
+library(forecast)
 
+fit <- auto.arima(all_PHI$DOGE, d = 0, max.p = 10, max.q = 0)
+
+# Coefficients and standard errors
+coefs <- fit$coef
+se <- sqrt(diag(fit$var.coef))
+
+# t-values and two-sided p-values
+tvals <- coefs / se
+pvals <- 2 * (1 - pnorm(abs(tvals)))
+
+# Put in a tidy table
+results <- data.frame(
+  Estimate = coefs,
+  Std.Error = se,
+  t.value = tvals,
+  p.value = pvals
+)
+
+results
+
+```
+Back test for specific coin from 2020-10-5 to 2021-07-06
+```{r}
+# Put PHI and Price data in the same df
+trading_df = cbind(crypto_wide, BTC_PHI = all_PHI$BTC)
+```
+
+#TODO find portfolio formula from AR model and contrarian statagy
 
 
 
