@@ -88,4 +88,88 @@ ggplot(PHI, aes(y = residuals, x = Date)) +
   geom_hline(yintercept = 0, color="blue")
 ```
 
+Find Model Automatically
+```{r}
+auto_lm <- function(df, response, alpha = 0.05) {
+  # start with all predictors except response and Date
+  predictors <- setdiff(names(df), c(response, "Date"))
+  
+  formula <- as.formula(paste(response, "~", paste(predictors, collapse = " + "), "+ 0"))
+  model <- lm(formula, data = df)
+  
+  repeat {
+    pvals <- summary(model)$coefficients[, 4]  # no intercept anymore
+    max_p <- max(pvals, na.rm = TRUE)
+    
+    if (max_p < alpha) break  # stop if all are significant
+    
+    worst_var <- names(which.max(pvals))
+    predictors <- setdiff(predictors, worst_var)
+    
+    formula <- as.formula(paste(response, "~", paste(predictors, collapse = " + "), "+ 0"))
+    model <- lm(formula, data = df)
+  }
+  
+  return(model)
+}
+
+
+
+final_model <- auto_lm(crypto_wide, "BTC", alpha = 0.05)
+summary(final_model)
+
+```
+```{r}
+PHI <- data.frame(
+  Date = crypto_wide$Date,
+  residuals = residuals(final_model)
+)
+
+ggplot(PHI, aes(y = residuals, x = Date)) +
+  geom_line() +
+  geom_hline(yintercept = 0, color="blue")
+```
+Finding PHI for each coin
+```{r}
+tickers = setdiff(colnames(crypto_wide), "Date")
+all_PHI = data.frame(Date = crypto_wide$Date) # Start off with Dates
+
+for (i in tickers){
+  temp_df = auto_lm(crypto_wide, i, alpha = 0.05)
+  all_PHI[[i]] = residuals(temp_df)
+}
+  
+```
+
+Make everything have the same sd. Testing to see if anything has extremes at the same time.
+```{r}
+df_scaled <- all_PHI  # start with original data
+numeric_cols <- setdiff(names(df_scaled), "Date")  # exclude Date
+
+target_sd <- 1  # desired standard deviation
+
+df_scaled[numeric_cols] <- lapply(df_scaled[numeric_cols], function(x) {
+  x_centered <- x - mean(x, na.rm = TRUE)
+  x_scaled <- x_centered / sd(x, na.rm = TRUE) * target_sd
+  return(x_scaled)
+})
+
+# Convert wide to long
+PHI_long <- df_scaled %>%
+  pivot_longer(
+    cols = -Date,           # everything except Date
+    names_to = "Symbol",    # new column for coin symbols
+    values_to = "Residuals"
+  )
+
+# Plot all coins
+ggplot(PHI_long, aes(x = Date, y = Residuals, color = Symbol)) +
+  geom_line(alpha=0.6) +
+  labs(
+    title = "Crypto PHI Over Time",
+    x = "Date",
+    y = "Residuals"
+  ) +
+  theme_minimal()
+```
 
