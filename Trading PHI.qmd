@@ -65,10 +65,17 @@ auto_lm <- function(df, response, alpha = 0.05) {
 
 tickers = setdiff(colnames(crypto_wide), "Date")
 all_PHI = data.frame(Date = crypto_wide$Date) # Start off with Dates
+all_models = list()
 
-for (i in tickers){
-  temp_df = auto_lm(crypto_wide, i, alpha = 0.05)
-  all_PHI[[i]] = residuals(temp_df)
+
+for (i in tickers) {
+  temp_model <- auto_lm(crypto_wide, i, alpha = 0.05)
+  
+  # Save residuals
+  all_PHI[[i]] <- residuals(temp_model)
+  
+  # Save the full model
+  all_models[[i]] <- temp_model
 }
   
 ```
@@ -83,9 +90,11 @@ ggplot(all_PHI, aes(y = BTC, x = Date)) +
 
 Find AR model parameters
 ```{r}
+coin_ticker = "BTC"
+
 library(forecast)
 
-fit <- auto.arima(all_PHI$DOGE, d = 0, max.p = 10, max.q = 0)
+fit <- auto.arima(all_PHI[[coin_ticker]], d = 0, max.p = 10, max.q = 0)
 
 # Coefficients and standard errors
 coefs <- fit$coef
@@ -109,10 +118,35 @@ results
 Back test for specific coin from 2020-10-5 to 2021-07-06
 ```{r}
 # Put PHI and Price data in the same df
-trading_df = cbind(crypto_wide, BTC_PHI = all_PHI$BTC)
+trading_df = cbind(crypto_wide, PHI = all_PHI[[coin_ticker]])
+model = all_models[[coin_ticker]]
+
+starting_money = 1000
+balance = c(starting_money)
+sigma_2 = fit$sigma2
+lambda = fit$coef
+coin_coef = model$coefficients
+coin_coef[[coin_ticker]] = 1
+  
+for (i in 1:(nrow(trading_df)-1)) { # -1 because you cant trade on last day
+  day_data = trading_df[i, ]
+  phi = day_data$PHI
+  
+  position_fraction = (1-lambda)*abs(phi)*phi / ( (1-lambda)^2*phi^2+sigma_2 ) # calculated based on E[ln(1-pi)] estimate, not correct
+  
+  position_value = position_fraction * tail(balance, 1)
+  
+  cost = 0
+  for (j in names(coin_coef)) {
+    cost = cost + as.numeric(day_data[j] * abs(coin_coef[j]))
+  }
+  
+  #TODO Calc how much to buy of each coin using cost, position size, and balance
+  
+}
 ```
 
-#TODO find portfolio formula from AR model and contrarian statagy
+#TODO find best position size, previous method uses return of residual not of my investment, which it should.
 
 
 
