@@ -7,6 +7,7 @@ editor: visual
 
 ```{r}
 library(tidyverse)
+library(forecast)
 ```
 
 ```{r}
@@ -36,6 +37,12 @@ crypto_wide <- crypto_data %>%
   drop_na()
 
 crypto_wide$Date = as.Date(crypto_wide$Date)
+
+n <- nrow(crypto_wide)
+split <- floor(0.8 * n)   # 80% train
+
+train <- crypto_wide[1:split, ]
+test  <- crypto_wide[(split+1):n, ]
 ```
 
 Finding PHI for each coin
@@ -63,13 +70,13 @@ auto_lm <- function(df, response, alpha = 0.05) {
   return(model)
 }
 
-tickers = setdiff(colnames(crypto_wide), "Date")
-all_PHI = data.frame(Date = crypto_wide$Date) # Start off with Dates
+tickers = setdiff(colnames(train), "Date")
+all_PHI = data.frame(Date = train$Date) # Start off with Dates
 all_models = list()
 
 
 for (i in tickers) {
-  temp_model <- auto_lm(crypto_wide, i, alpha = 0.05)
+  temp_model <- auto_lm(train, i, alpha = 0.05)
   
   # Save residuals
   all_PHI[[i]] <- residuals(temp_model)
@@ -90,11 +97,11 @@ ggplot(all_PHI, aes(y = BTC, x = Date)) +
 
 Find AR model parameters
 ```{r}
-coin_ticker = "BTC"
+coin_ticker = "ADA"
 
-library(forecast)
 
-fit <- auto.arima(all_PHI[[coin_ticker]], d = 0, max.p = 10, max.q = 0)
+
+fit <- auto.arima(all_PHI[[coin_ticker]], d = 0, max.p = 1, max.q = 0)
 
 # Coefficients and standard errors
 coefs <- fit$coef
@@ -118,37 +125,57 @@ results
 Back test for specific coin from 2020-10-5 to 2021-07-06
 ```{r}
 # Put PHI and Price data in the same df
-trading_df = cbind(crypto_wide, PHI = all_PHI[[coin_ticker]])
+trading_df = data.frame(test)
 model = all_models[[coin_ticker]]
 
 starting_money = 1000
 balance = c(starting_money)
-sigma_2 = fit$sigma2
-lambda = fit$coef
-coin_coef = model$coefficients
+sigma_2 = as.numeric(fit$sigma2)
+lambda = as.numeric(fit$coef)
+coin_coef = -model$coefficients# -1 because you solve you the residual by subtracting lm
 coin_coef[[coin_ticker]] = 1
   
 for (i in 1:(nrow(trading_df)-1)) { # -1 because you cant trade on last day
   day_data = trading_df[i, ]
-  phi = day_data$PHI
+  next_day_data = trading_df[i+1, ]
   
-  position_fraction = (1-lambda)*abs(phi)*phi / ( (1-lambda)^2*phi^2+sigma_2 ) # calculated based on E[ln(1-pi)] estimate, not correct
+  phi = day_data[[coin_ticker]] - predict(model, newdata = day_data)
   
+  position_fraction = -(1-lambda)*phi / ( (1-lambda)^2*phi^2+sigma_2 ) # calculated based on E[ln(1-pi)] estimate, not correct
+
+  position_fraction = pmin(pmax(position_fraction, -.9), .9)
   position_value = position_fraction * tail(balance, 1)
   
-  cost = 0
-  for (j in names(coin_coef)) {
-    cost = cost + as.numeric(day_data[j] * abs(coin_coef[j]))
-  }
+  exposure = sum(abs(coin_coef) * as.numeric(day_data[names(coin_coef)])) # abs() because cash is needed to hold short
   
-  #TODO Calc how much to buy of each coin using cost, position size, and balance
+  buy_ratio = position_value / exposure
+  
+  buy_coin_amounts = coin_coef * buy_ratio
+  
+  price_t0 = 0
+  for (j in names(coin_coef)) {
+    price_t0 = price_t0 + as.numeric(day_data[j] * buy_coin_amounts[j])
+  }
+  price_t1 = 0
+  for (j in names(coin_coef)) {
+    price_t1 = price_t1 + as.numeric(next_day_data[j] * buy_coin_amounts[j])
+  }
+  profit = price_t1-price_t0
+  balance[i+1] = balance[i] + profit
   
 }
+tail(balance, 10)
+min(balance)
+max(balance)
 ```
 
-#TODO find best position size, previous method uses return of residual not of my investment, which it should.
 
+```{r}
+balance_df = data.frame(Date = test$Date, balance = balance)
 
+ggplot(balance_df, aes(y=balance, x=Date)) +
+  geom_line()
+```
 
 
 

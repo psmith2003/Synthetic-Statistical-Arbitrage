@@ -1,0 +1,178 @@
+---
+title: "Trading PHI 2"
+format: html
+editor: visual
+---
+
+```{r}
+library(tidyverse)
+library(forecast)
+```
+
+```{r}
+
+# Folder containing all your CSVs
+folder_path <- "C:/Users/Parker Smith/Desktop/crypto/data 2"
+
+# Get a list of all CSV files in the folder
+files <- list.files(folder_path, pattern = "\\.csv$", full.names = TRUE)
+
+# Read all CSVs and combine them into one data frame
+exclude = c('USDT', 'USDC', 'WBTC')
+securities_data <- files %>%
+  lapply(read.csv) %>%
+  bind_rows() %>% 
+  filter(!Symbol %in% exclude)
+```
+
+```{r}
+securities_wide <- securities_data %>%
+  select(Symbol, Date, Close) %>%          # Keep only relevant columns
+  pivot_wider(
+    names_from = Symbol,                   # Column names come from the coin symbol
+    values_from = Close                    # Values come from the Close column
+  ) %>%
+  arrange(Date) %>% 
+  drop_na()
+
+securities_wide$Date = as.Date(securities_wide$Date)
+```
+
+
+
+```{r}
+auto_lm <- function(df, response, alpha = 0.05) {
+  # start with all predictors except response and Date
+  predictors <- setdiff(names(df), c(response, "Date"))
+  
+  formula <- as.formula(paste(response, "~", paste(predictors, collapse = " + "), "+ 0"))
+  model <- lm(formula, data = df)
+  
+  repeat {
+    pvals <- summary(model)$coefficients[, 4]  # no intercept anymore
+    max_p <- max(pvals, na.rm = TRUE)
+    
+    if (max_p < alpha) break  # stop if all are significant
+    
+    worst_var <- names(which.max(pvals))
+    predictors <- setdiff(predictors, worst_var)
+    
+    formula <- as.formula(paste(response, "~", paste(predictors, collapse = " + "), "+ 0"))
+    model <- lm(formula, data = df)
+  }
+  
+  return(model)
+}
+```
+
+
+
+```{r}
+get_arima_coefs <- function(series, max_p = 1, max_q = 0, d = 0) {
+  # Fit ARIMA model
+  fit <- auto.arima(series, d = d, max.p = max_p, max.q = max_q)
+  
+  return(fit)
+}
+```
+
+
+
+```{r}
+ticker = "XEM"
+# Put PHI and Price data in the same df
+trading_df = securities_wide %>% 
+  select(-Date)
+
+starting_money = 1000
+balance = c(starting_money)
+n_trail = 300
+phi_t = numeric()
+  
+for (i in (n_trail+1):(nrow(trading_df)-1)) { # -1 because you cant trade on last day
+  last_n_days = trading_df[(i-n_trail+1):i, ]
+  
+  model = auto_lm(last_n_days, ticker, 0.05)
+  fit = Arima(model$residuals, order = c(1, 0, 0), include.mean = F)
+  
+  sigma_2 = as.numeric(fit$sigma2)
+  lambda = as.numeric(fit$coef)
+  sec_coef = -model$coefficients# -1 because you solve you for the residual by subtracting lm
+  sec_coef[[ticker]] = 1
+  
+  day_data = trading_df[i, ]
+  next_day_data = trading_df[i+1, ]
+  
+  phi = day_data[[ticker]] - predict(model, newdata = day_data)
+  phi_t = c(phi_t, as.numeric(phi))
+  
+  position_fraction = -phi*(1-lambda) / (sigma_2 * (1+2*(1-lambda)^2) / (1-lambda^2) )
+  
+  max_leverage <- 0.9  # cannot go beyond 90% of your balance
+  position_fraction <- pmin(pmax(position_fraction, -max_leverage), max_leverage)
+
+  
+  if(abs(phi)<sqrt(sigma_2)) {
+    position_fraction = 0
+  }
+
+  position_fraction = pmin(pmax(position_fraction, -.9), .9)
+
+  position_value = position_fraction * tail(balance, 1)
+  
+  exposure = sum(abs(sec_coef) * as.numeric(day_data[names(sec_coef)])) # abs() because cash is needed to hold short
+  
+  buy_ratio = position_value / exposure
+  
+  buy_sec_amounts = sec_coef * buy_ratio
+  
+  price_t0 = 0
+  for (j in names(sec_coef)) {
+    price_t0 = price_t0 + as.numeric(day_data[j] * buy_sec_amounts[j])
+  }
+  price_t1 = 0
+  for (j in names(sec_coef)) {
+    price_t1 = price_t1 + as.numeric(next_day_data[j] * buy_sec_amounts[j])
+  }
+  
+  profit = price_t1-price_t0
+  balance = c(balance, tail(balance, 1) + profit)
+
+}
+tail(balance, 10)
+min(balance)
+max(balance)
+```
+
+```{r}
+balance_df = data.frame(
+  Date = securities_wide$Date[(n_trail + 1):nrow(securities_wide)],
+  balance = balance,
+  phi = c(0, phi_t)
+)
+
+
+# Balance plot
+p1 <- ggplot(balance_df, aes(x = Date, y = balance)) +
+  geom_line(color = "blue") +
+  labs(title = "Balance over Time", y = "Balance") +
+  theme_minimal()
+
+# Phi plot
+p2 <- ggplot(balance_df, aes(x = Date, y = phi)) +
+  geom_line(color = "red") +
+  labs(title = "Phi over Time", y = "Phi") +
+  theme_minimal()
+
+p3 <- ggplot(securities_wide, aes(x = Date, y = BTC)) +
+  geom_line(color = "green") +
+  labs(title = "Phi over Time", y = "Phi") +
+  theme_minimal()
+
+# Print separately
+p1
+p2
+p3
+
+```
+

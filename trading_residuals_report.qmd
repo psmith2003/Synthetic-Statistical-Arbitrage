@@ -1,0 +1,35 @@
+---
+title: "Regression Residual Trading"
+author: "Parker Smith"
+format: 
+  html:
+    theme: darkly
+execute:
+  echo: true
+  warning: false
+  error: false
+editor_options: 
+  chunk_output_type: console
+---
+
+# Regression Residual Trading
+
+::: {.panel-tabset}
+
+## Overview
+The foundation of this trading strategy is that traders will trade similar securities in a similar fashion. Let's assume there are only two stocks $S_1$ and $S_2$. Say $S_1$ increases by $10\%$, traders would expect either $S_1$ to decrease back to its original value or $S_2$ to increase and meet $S_1$.
+
+
+This idea can be profited from by shorting $S_1$ and going long $S_2$. The following trading strategy will mathematical describe and refine this idea, which will theoretically allow us to profit consistently on trades.
+
+
+## Formulation
+
+
+## Implementation
+
+
+## Improvements
+
+
+:::
