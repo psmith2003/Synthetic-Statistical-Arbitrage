@@ -38,6 +38,10 @@ This provides weights for each security to be bought at. Each security $S_n$ wil
 ```{r}
 library(tidyverse)
 library(forecast)
+library(knitr)
+library(kableExtra)
+library(scales)
+library(purrr)
 
 # Folder containing all your CSVs
 folder_path <- "C:/Users/Parker Smith/Desktop/crypto/data 2"
@@ -97,7 +101,7 @@ model = auto_lm(securities_wide[ , !(names(securities_wide) %in% "Date")], 'BTC'
 
 fit = Arima(model$residuals, order = c(1, 0, 0), include.mean = F)
 ```
-To examine $\phi$, data from cryptocurrencies will be used. The data is from 2020-10-05 to 2021-07-06.
+To examine $\phi$, data from 23 cryptocurrencies will be used. The data is from 2020-10-05 to 2021-07-06.
 
 ```{r}
 theme_dark_mode <- function() {
@@ -106,14 +110,14 @@ theme_dark_mode <- function() {
       plot.background = element_rect(fill = "#1e1e1e", color = NA),
       panel.background = element_rect(fill = "#1e1e1e", color = NA),
       panel.grid.major = element_line(color = "#444444"),
-      panel.grid.minor = element_line(color = "#333333"),
-      axis.text = element_text(color = "white"),
-      axis.title = element_text(color = "white"),
-      plot.title = element_text(color = "white", face = "bold", size = 14),
-      plot.subtitle = element_text(color = "white", size = 12),
+      panel.grid.minor = element_line(color = "#242424"),
+      axis.text = element_text(color = "gray80"),
+      axis.title = element_text(color = "gray80"),
+      plot.title = element_text(color = "gray80", face = "bold", size = 14),
+      plot.subtitle = element_text(color = "gray80", size = 12),
       legend.background = element_rect(fill = "#1e1e1e", color = NA),
-      legend.text = element_text(color = "white"),
-      legend.title = element_text(color = "white", face = "bold")
+      legend.text = element_text(color = "gray80"),
+      legend.title = element_text(color = "gray80", face = "bold")
     )
 }
 
@@ -129,21 +133,467 @@ ggplot(phi, aes(y=phi, x=Date)) +
     title = "Phi from 2020-10-05 to 2021-07-06",
     y = "Phi ($)",
     x = NULL
-  )
+  ) +
+  scale_x_date(date_breaks = "1 month", date_labels = "%b %Y") +
+  scale_y_continuous(labels = scales::dollar)
   
 ```
-Unlike a usual regression error $\epsilon$, $\phi_t$ seems to be dependent on $\phi_{t-1}$. Since we are assuming that prices will converge, $\phi$ should be pulled toward $0$. This would imply a Auto Regressive (AR) model. After testing the AR(1) model provided the best AIC, avoiding over fitting. This gives a new equation for $\phi_t$:
+Unlike a usual regression error $\epsilon$, $\phi_t$ seems to be dependent on $\phi_{t-1}$. Since prices are assumed to converge, $\phi$ should be pulled toward $0$. This would imply a Auto Regressive (AR) model. After some testing various orders, the AR(1) model provided the best AIC, avoiding over fitting. This gives a new equation for $\phi_t$:
 
 $$
 \phi_t = \lambda \phi_{t-1} + \sigma z_t \quad \; \lambda, \sigma \in \mathbb{R}
 $$
-where $z_t$ is a standard normal variable.
+where $z_t$ is a standard normal variable.  
+
+An AR(1) model can be fit to $\phi$. This is using all 23 cryptocurrencies.
+```{r}
+
+# Simple data frame from ARIMA(1,0,0) model results
+fit <- arima(model$residuals, order = c(1, 0, 0), include.mean = FALSE)
+
+# Extract coefficients and standard errors
+coefficients <- coef(fit)
+std_errors <- sqrt(diag(vcov(fit)))
+
+# Calculate t-values and p-values
+t_values <- coefficients / std_errors
+p_values <- 2 * (1 - pnorm(abs(t_values)))
+
+# Get standard deviation of the shock (innovation standard deviation)
+shock_sd <- sqrt(fit$sigma2)
+
+# Create simple results data frame
+results_df <- data.frame(
+  Parameter = c(names(coefficients), "shock_sd"),
+  Estimate = c(round(coefficients, 4), round(shock_sd, 4)),
+  Std_Error = c(round(std_errors, 4), NA),
+  t_value = c(round(t_values, 4), NA),
+  p_value = c(round(p_values, 6), NA)
+)
+results_df$Parameter[results_df$Parameter == "ar1"] <- "\\(\\lambda\\)"
+results_df$Parameter[results_df$Parameter == "shock_sd"] <- "\\(\\sigma\\)"
+
+kable(results_df, format = "html", escape = FALSE, row.names = F) %>%
+  kable_styling(full_width = FALSE)
+```
+
+Using less securities gives parameters that inhibit predictability of $\phi$. The following is using only Ethereum and Bitcoin.
+```{r}
+BE_df = securities_wide[, c("ETH", "BTC")]
+model_BE = auto_lm(BE_df, 'BTC')
+
+# Simple data frame from ARIMA(1,0,0) model results
+fit_BE <- arima(model_BE$residuals, order = c(1, 0, 0), include.mean = FALSE)
+
+# Extract coefficients and standard errors
+coefficients_BE <- coef(fit_BE)
+std_errors_BE <- sqrt(diag(vcov(fit_BE)))
+
+# Calculate t-values and p-values
+t_values_BE <- coefficients_BE / std_errors_BE
+p_values_BE <- 2 * (1 - pnorm(abs(t_values_BE)))
+
+# Get standard deviation of the shock (innovation standard deviation)
+shock_sd_BE <- sqrt(fit_BE$sigma2)
+
+# Create simple results data frame
+results_df_BE <- data.frame(
+  Parameter = c(names(coefficients_BE), "shock_sd"),
+  Estimate = c(round(coefficients_BE, 4), round(shock_sd_BE, 4)),
+  Std_Error = c(round(std_errors_BE, 4), NA),
+  t_value = c(round(t_values_BE, 4), NA),
+  p_value = c(round(p_values_BE, 6), NA)
+)
+
+# Replace names with LaTeX symbols
+results_df_BE$Parameter[results_df_BE$Parameter == "ar1"] <- "\\(\\lambda\\)"
+results_df_BE$Parameter[results_df_BE$Parameter == "shock_sd"] <- "\\(\\sigma\\)"
+
+# Render table for HTML
+kable(results_df_BE, format = "html", escape = FALSE, row.names = FALSE) %>%
+  kable_styling(full_width = FALSE)
+
+```
+Though $\sigma$ is similar, the increased $\lambda$ results in reduced trade profits and greater profit variance. This will will be proved in the "Expected Returns" section. Because of this, more securities are preferred as it tends to provide lower $\lambda$ and $\sigma$.
+
+### Position Sizing
+To size trades, log utility maximization will be used. This will help avoid ruin. Wealth follows the formula: $$W_{t+1} = W_t (1 + f_t R_{t+1})$$ where $W_{t+1}$ is tomorrows wealth, $W_t$ is today's wealth, $R_{t+1}$ is tomorrow's return on a trade, and $f_{t}$ is the fraction of wealth used in a trade.  
+Using log utility maximization we need to maximize: $$\mathbb{E}[\ln(1+f_{t} R_t)]$$
+Substituting 
+$$
+R_{t+1} = \frac{\phi_{t+1}-\phi_{t}}{C_t}
+$$
+where $C_{t}$ is the cost of purchasing $\phi_{t}$. We then get: 
+$$
+\mathbb{E}[\ln(1+f_{t} \frac{\phi_{t+1}-\phi_{t}}{C_{t}})]
+$$
+
+Since $-\infty<\phi<\infty$ the expected value cannot be analytically evaluated. Instead, the second order Taylor approximation can be used. Higher orders can be used for greater accuracy. The new approximation is: 
+$$
+\begin{align}
+\mathbb{E}\!\left[\ln\!\left(1+f_{t} \frac{\phi_{t+1}-\phi_{t}}{C_{t}}\right)\right]
+&\approx 
+\mathbb{E}\!\left[f_{t} \frac{\phi_{t+1}-\phi_{t}}{C_{t}} 
+- \frac{1}{2}\left(f_{t} \frac{\phi_{t+1}-\phi_{t}}{C_{t}}\right)^2\right] \\
+&= \frac{f_{t}}{C_{t}}( \lambda-1 ) \phi_{t}
+- \frac{f_{t}^2}{2 C_{t}^2} \big[(\lambda-1)^2 \phi_{t}^2+\sigma^2\big] 
+\quad \text{using } \phi_{t+1}=\lambda\phi_t+\sigma z_{t+1}
+\end{align}
+$$
+By maximizing with respect to $f_t$ we get our trade size to be:
+$$
+f_t = -\frac{C_{t}(1-\lambda)\phi_t}{(1-\lambda)^2\phi_t^2+\sigma^2}
+$$
+where $C_t$ is the cost of purchasing $\phi_t$, $\lambda$ is the AR(1) coefficient, and $\sigma$ is the standard deviation of the noise. Note that a negative fraction of wealth means going short. 
+
+### Expected Returns
+
+Using our chosen trade size, we can compute a trade’s expected return on wealth:
+$$
+\begin{align}
+\mathbb{E}\!\left[1 + f_t R_{t+1} \,\middle|\, \phi_t\right] 
+&= 1 
+- \frac{C_t (1 - \lambda)\,\phi_t}{(1 - \lambda)^2 \phi_t^2 + \sigma^2} 
+\cdot \mathbb{E}\!\left[\frac{\phi_{t+1} - \phi_t}{C_t}\right] \\[6pt]
+&= 1 
+- \frac{(1 - \lambda)\,\phi_t}{(1 - \lambda)^2 \phi_t^2 + \sigma^2} 
+\cdot \mathbb{E}\!\left[(\lambda - 1)\,\phi_t + \sigma z_t\right] \\[6pt]
+&= 1 
++ \frac{(1 - \lambda)^2 \phi_t^2}{(1 - \lambda)^2 \phi_t^2 + \sigma^2}
+\end{align}
+$$
+Since this equation has $(1-\lambda)$, $\phi_t$, and $\sigma$ all squared, it will always be positive. This means the expected return is positive, thus the trading strategy will, on average, make money.   
+  
+To show the earlier claim that low $\lambda$ is better for trading, consider the derivative of the expected returns:  
+
+\begin{align}
+\frac{d}{d \lambda} \mathbb{E}\!\left[1 + f_t R_{t+1} \,\middle|\, \phi_t\right] 
+&= \frac{d}{d \lambda} \left( 
+1 + \frac{(1 - \lambda)^2 \phi_t^2}{(1 - \lambda)^2 \phi_t^2 + \sigma^2}
+\right) \\
+&= \frac{-2(1-\lambda)\,\phi_t^2\,\sigma^2}{\left((1-\lambda)^2 \phi_t^2 + \sigma^2\right)^2}
+\end{align}
+
+Since the denominator, $\phi_t$, and $\sigma$ are all squared and $\lambda<1$ we know this derivative will be negative. This means that as $\lambda$ decreases our expected returns increase, thus low values of $\lambda$ lead to higher returns on average.  
+  
+Keep in mind that all the equations used in this section only hold under the assumptions that:
+
+- $\phi$ is an AR(1) process
+- $\phi$ continues to follow the same AR(1) process beyond the training data
 
 
 ## Implementation
+This section will explore the performance of the trading strategy against real data.  
+  
+### Training Data
+First, to ensure the mathematics behind the strategy are correct, trading will be simulated on the training data. This is to check for flaws in the underlying theory.  
+The fraction of wealth equation derived in the Formulation section can over leverage, so a cap of $\pm0.9$ is set on the fraction, as well as dividing it by $20$. This coefficient is a way to increase or decrease risk while using the strategy.
+```{r}
 
+run_strategy <- function(ticker, data) {
+  trading_df <- data %>% select(-Date)
+  
+  starting_money <- 1000
+  balance <- c(starting_money)
+  phi_t <- numeric()
+  
+  model <- auto_lm(trading_df, ticker, 1.00)
+  fit <- Arima(model$residuals, order = c(1, 0, 0), include.mean = FALSE)
+  
+  sigma_2 <- as.numeric(fit$sigma2)
+  lambda <- as.numeric(fit$coef)
+  sec_coef <- -model$coefficients
+  sec_coef[[ticker]] <- 1
+  
+  for (i in 1:(nrow(trading_df)-1)) {
+    day_data <- trading_df[i, ]
+    next_day_data <- trading_df[i+1, ]
+    
+    phi <- day_data[[ticker]] - predict(model, newdata = day_data)
+    phi_t <- c(phi_t, as.numeric(phi))
+    
+    exposure <- sum(abs(sec_coef) * as.numeric(day_data[names(sec_coef)]))
+    
+    position_fraction <- -phi*(1-lambda) / (sigma_2 + (1-lambda)^2*phi^2) * exposure / 20
+    position_fraction <- pmin(pmax(position_fraction, -0.9), 0.9)
+    
+    position_value <- position_fraction * tail(balance, 1)
+    buy_ratio <- position_value / exposure
+    buy_sec_amounts <- sec_coef * buy_ratio
+    
+    price_t0 <- sum(as.numeric(day_data[names(sec_coef)] * buy_sec_amounts))
+    price_t1 <- sum(as.numeric(next_day_data[names(sec_coef)] * buy_sec_amounts))
+    
+    profit <- price_t1 - price_t0
+    balance <- c(balance, tail(balance, 1) + profit)
+  }
+  
+  data.frame(
+    Date = data$Date,
+    balance = balance,
+    ticker = ticker
+  )
+}
+
+# ---- Run for multiple tickers ----
+tickers <- colnames(securities_wide %>% select(-Date))
+balance_all <- map_dfr(tickers, ~ run_strategy(.x, securities_wide))
+
+# ---- Plot ----
+ggplot(balance_all, aes(x = Date, y = balance, color = ticker)) +
+  geom_line(linewidth = 0.75) +
+  labs(title = "Wealth over Time by Base",
+       subtitle = "Starting at $1000 each",
+       y = NULL, x = NULL,
+       color = "Base") +
+  scale_y_continuous(labels = scales::dollar) +
+  scale_x_date(date_breaks = "1 month", date_labels = "%b %Y") +
+  theme_dark_mode()
+
+```
+This shows that the assumption of $\phi$ being a AR(1) is at least partially true, as well as confirming that the trade sizing found in the Formulation section is working.  
+  
+The following is the a closer look at XEM as a base. Even during downwards movement in the base the strategy can return a profit.
+```{r}
+ticker = "XEM"
+# Put PHI and Price data in the same df
+trading_df = securities_wide %>% 
+  select(-Date)
+
+starting_money = 1000
+balance = c(starting_money)
+phi_t = numeric()
+
+
+model = auto_lm(trading_df, ticker, 1.00)
+fit = Arima(model$residuals, order = c(1, 0, 0), include.mean = F)
+
+sigma_2 = as.numeric(fit$sigma2)
+lambda = as.numeric(fit$coef)
+sec_coef = -model$coefficients# -1 because you solve you for the residual by subtracting lm
+sec_coef[[ticker]] = 1
+  
+  
+for (i in (1):(nrow(trading_df)-1)) { # -1 because you cant trade on last day
+  
+  day_data = trading_df[i, ]
+  next_day_data = trading_df[i+1, ]
+  
+  phi = day_data[[ticker]] - predict(model, newdata = day_data)
+  phi_t = c(phi_t, as.numeric(phi))
+  
+  exposure = sum(abs(sec_coef) * as.numeric(day_data[names(sec_coef)])) # abs() because cash is needed to hold short
+  
+  position_fraction = -phi*(1-lambda) / (sigma_2 + (1-lambda)^2*phi^2 ) * exposure / 20
+  
+  max_leverage <- 0.9  # cannot go beyond 90% of your balance
+  position_fraction <- pmin(pmax(position_fraction, -max_leverage), max_leverage)
+
+
+  position_value = position_fraction * tail(balance, 1)
+  #print(position_fraction)
+  
+  buy_ratio = position_value / exposure
+  
+  buy_sec_amounts = sec_coef * buy_ratio
+  
+  price_t0 = 0
+  for (j in names(sec_coef)) {
+    price_t0 = price_t0 + as.numeric(day_data[j] * buy_sec_amounts[j])
+  }
+  price_t1 = 0
+  for (j in names(sec_coef)) {
+    price_t1 = price_t1 + as.numeric(next_day_data[j] * buy_sec_amounts[j])
+  }
+  
+  profit = price_t1-price_t0
+  balance = c(balance, tail(balance, 1) + profit)
+
+}
+
+balance_df = data.frame(
+  Date = securities_wide$Date[(1):nrow(securities_wide)],
+  balance = balance,
+  phi = c(0, phi_t)
+)
+
+
+# Balance plot
+p1 <- ggplot(balance_df, aes(x = Date, y = balance)) +
+  geom_line(color = "green", linewidth = .75) +
+  labs(title = "Wealth over Time", 
+       subtitle = "Starting at $1000 with XEM Base",
+       y = NULL,
+       x = NULL) +
+  scale_y_continuous(breaks = seq(1000, 2250, 250), labels = scales::dollar) +
+  scale_x_date(date_breaks = "1 month", date_labels = "%b %Y") +
+  theme_dark_mode()
+
+# Phi plot
+# p2 <- ggplot(balance_df, aes(x = Date, y = phi)) +
+#   geom_line(color = "red") +
+#   labs(title = "Phi over Time", y = "Phi") +
+#   theme_dark_mode()
+# 
+p3 <- ggplot(securities_wide,
+             aes(x = Date, y = .data[[ticker]])) + # / .data[[ticker]][1] * 1000 normalize if needed
+  geom_line(color = "#999999", linewidth = .75) +
+  labs(title = "XEM Price", y = NULL, x = NULL) +
+  scale_x_date(date_breaks = "1 month", date_labels = "%b %Y") +
+  scale_y_continuous(labels = dollar) +
+  theme_dark_mode()
+
+# Print separately
+p1
+# p2
+p3
+```
+  
+### Testing Data
+Trading with training data shows that the strategy works in theory, but it utilizes future data. If, instead, the data is split, 80% training and 20% testing, a more realistic test can be performed. The following is using the first 80% of the data to find the weights $\lambda_n$ and the last 20% is used to find $\phi$ and to trade. This test also excludes less significant securities from the pseudo-security in attempt to reduce over fitting, as well as dividing the fraction by 20 and capping to $\pm0.9$ to avoid over leveraging.
+```{r}
+
+run_strategy <- function(ticker, train, test) {
+  trading_df <- test %>% select(-Date)
+  train_trading_df <- train %>% select(-Date)
+  
+  starting_money <- 1000
+  balance <- c(starting_money)
+  phi_t <- numeric()
+  
+  model <- auto_lm(train_trading_df, ticker, 0.05)
+  fit <- Arima(model$residuals, order = c(1, 0, 0), include.mean = FALSE)
+  
+  sigma_2 <- as.numeric(fit$sigma2)
+  lambda <- as.numeric(fit$coef)
+  sec_coef <- -model$coefficients
+  sec_coef[[ticker]] <- 1
+  
+  for (i in 1:(nrow(trading_df)-1)) {
+    day_data <- trading_df[i, ]
+    next_day_data <- trading_df[i+1, ]
+    
+    phi <- day_data[[ticker]] - predict(model, newdata = day_data)
+    phi_t <- c(phi_t, as.numeric(phi))
+    
+    exposure <- sum(abs(sec_coef) * as.numeric(day_data[names(sec_coef)]))
+    
+    position_fraction <- -phi*(1-lambda) / (sigma_2 + (1-lambda)^2*phi^2) * exposure / 20
+    position_fraction <- pmin(pmax(position_fraction, -0.9), 0.9)
+    
+    position_value <- position_fraction * tail(balance, 1)
+    buy_ratio <- position_value / exposure
+    buy_sec_amounts <- sec_coef * buy_ratio
+    
+    price_t0 <- sum(as.numeric(day_data[names(sec_coef)] * buy_sec_amounts))
+    price_t1 <- sum(as.numeric(next_day_data[names(sec_coef)] * buy_sec_amounts))
+    
+    profit <- price_t1 - price_t0
+    balance <- c(balance, tail(balance, 1) + profit)
+  }
+  
+  data.frame(
+    Date = test$Date,
+    balance = balance,
+    ticker = ticker
+  )
+}
+
+# ---- Run for multiple tickers ----
+tickers <- colnames(securities_wide %>% select(-Date))
+balance_all <- map_dfr(tickers, ~ run_strategy(.x, train, test))
+
+# ---- Plot ----
+ggplot(balance_all, aes(x = Date, y = balance, color = ticker)) +
+  geom_line(linewidth = 0.75) +
+  labs(title = "Wealth over Time by Base",
+       subtitle = "Starting at $1000 each",
+       y = NULL, x = NULL,
+       color = "Base") +
+  scale_y_continuous(labels = scales::dollar) +
+  scale_x_date(date_breaks = "1 month", date_labels = "%b %Y") +
+  theme_dark_mode()
+```
+
+```{r}
+ticker = "XLM"
+# Put PHI and Price data in the same df
+trading_df = test %>% 
+  select(-Date)
+train_trading_df = train %>% 
+  select(-Date)
+
+starting_money = 1000
+balance = c(starting_money)
+phi_t = numeric()
+
+
+model = auto_lm(train_trading_df, ticker, 0.05)
+fit = Arima(model$residuals, order = c(1, 0, 0), include.mean = F)
+
+sigma_2 = as.numeric(fit$sigma2)
+lambda = as.numeric(fit$coef)
+sec_coef = -model$coefficients# -1 because you solve you for the residual by subtracting lm
+sec_coef[[ticker]] = 1
+  
+  
+for (i in (1):(nrow(trading_df)-1)) { # -1 because you cant trade on last day
+  
+  
+  day_data = trading_df[i, ]
+  next_day_data = trading_df[i+1, ]
+  
+  phi = day_data[[ticker]] - predict(model, newdata = day_data)
+  phi_t = c(phi_t, as.numeric(phi))
+  
+  exposure = sum(abs(sec_coef) * as.numeric(day_data[names(sec_coef)])) # abs() because cash is needed to hold sho rt
+  
+  position_fraction = -phi*(1-lambda) / (sigma_2 + (1-lambda)^2*phi^2 ) * exposure / 50
+  
+  max_leverage <- 0.9  # cannot go beyond 90% of your balance
+  position_fraction <- pmin(pmax(position_fraction, -max_leverage), max_leverage)
+  
+
+  position_value = position_fraction * tail(balance, 1)
+  #print(position_fraction)
+  
+  buy_ratio = position_value / exposure
+  
+  buy_sec_amounts = sec_coef * buy_ratio
+  
+  #trading code
+  price_t0 = 0
+  for (j in names(sec_coef)) {
+    price_t0 = price_t0 + as.numeric(day_data[j] * buy_sec_amounts[j])
+  }
+  price_t1 = 0
+  for (j in names(sec_coef)) {
+    price_t1 = price_t1 + as.numeric(next_day_data[j] * buy_sec_amounts[j])
+  }
+  
+  profit = price_t1-price_t0
+  balance = c(balance, tail(balance, 1) + profit)
+
+}
+
+balance_df = data.frame(
+  Date = test$Date[(1):nrow(test)],
+  balance = balance,
+  phi = c(0, phi_t)
+)
+
+mod_sum = summary(model)
+coef_df <- as.data.frame(mod_sum$coefficients)
+kable(coef_df, format = "html", escape = FALSE, row.names = TRUE) %>%
+  kable_styling(full_width = FALSE)
+```
+These are the securities which pass the significance threshold. It important to remember that the insignificant securities where removed to avoid over fitting, not because they weren't useful. 
 
 ## Improvements
+
+- Security selection more rigorous than P-value / Significance thresholds
+- Use gradiant decent to find security weights
+_ Only trade on exteame $\phi$ values
 
 
 :::
