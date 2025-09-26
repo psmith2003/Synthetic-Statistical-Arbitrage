@@ -13,26 +13,26 @@ editor_options:
 code-fold: true
 ---
 
-# Regression Residual Trading
 
 ::: {.panel-tabset}
 
 ## Overview
-The foundation of this trading strategy is that traders will trade similar securities in a similar fashion. Let's assume there are only two securities $S_1$ and $S_2$. Say $S_1$ increases by $10\%$, traders would expect either $S_1$ to decrease back to its original value, $S_2$ to increase and meet $S_1$, or both. This idea can be profited from by shorting $S_1$ and going long $S_2$. 
-
-The following trading strategy will generalize this idea. By utilizing more securities, the random noise found in our position can be reduced, leading to more consistent returns. The strategy also remain neutral to overall market movements, allowing for returns in any market condition.
+The foundation of this trading strategy is that traders will trade similar securities in a similar fashion. For example let's consider two securities denoted $S_1$ and $S_2$. We assume that traders will expect for these to move together. If $S_1$ or $S_2$ deviate from one another, we expect them to converge. This phenomena can be profited from by buying one security and shorting the other. This strategy will tell us which security to short and which to buy and in what quantities. It will also allow for more securities to be included, which improves the model.
 
 
 ## Formulation
 ### Relating $S_1$ and $S_2$
-Starting with only two securities, $S_1$ and $S_2$, we can construct a formula for $S_1$ using $S_2$.  
-Let $$S_{1,t} = \lambda S_{2,t} + \phi_t$$
-where $\lambda, \phi_t \in \mathbb{R}$.  
-$\lambda$ and $\phi_t$ can be estimated using a linear regression, assuming $\phi$ is the error. More securities can be added for lower variance for $\phi_t$.
+To describe the phenomena described in the overview consider two securities denoted $S_B$ and $S_P$, where $S_B$ is the "Base security" and $S_P$ is the "Pseudo-Security".  
+Let $$S_{B,t} = S_{P,t} + \phi_t$$
+where $\phi_t \in \mathbb{R}$.  
+While the base($S_B$) is just a security, The pseudo-security($S_B$) is more complex. It is a linear combination of securities that follows $S_B$. By substituting $S_{P,t} = \sum_{i=1}^{n} \gamma_i S_{i,t}$ we get: $$S_{B,t} = \sum_{i=1}^{n} \gamma_i S_{i,t} + \phi_t$$  
+where $\gamma_i \in \mathbb{R}$.  
+All the $\gamma_i$ can be found using various methods. Least squares will be used here, though gradient decent could give a less overfit model.
+
 
 ### How to trade $\phi$
-Using our $\lambda$ estimates we have the formula $$S_{1,t} = \lambda_2 S_{2,t} + \lambda_3 S_{3,t}+...+\lambda_n S_{n,t} +\phi_t$$ where $\phi_t$ is the difference between security prices. A portfolio emulating $\phi_t$'s price can be found by solving for $\phi_t$. $$\phi_t = S_{1,t} - \sum_{i=2}^{n} \lambda_i S_{i,t}$$
-This provides weights for each security to be bought at. Each security $S_n$ will have $\lambda_n$ shares bought, negative $\lambda$ means going short.
+Using the formula $S_{B,t} = \sum_{i=1}^{n} \gamma_i S_{i,t} + \phi_t$, $\phi_t$ can be solved for to get: $$\phi_t = S_{B,t} - \sum_{i=1}^{n} \gamma_i S_{i,t}$$
+The $\gamma_i$ provides weights for each security to be bought at, as well as a weight of $1$ for $S_B$. Each security $S_i$ will have $\gamma_i$ shares bought, negative $\gamma_i$ means going short.
 
 ### Properties of $\phi$
 ```{r}
@@ -138,7 +138,7 @@ ggplot(phi, aes(y=phi, x=Date)) +
   scale_y_continuous(labels = scales::dollar)
   
 ```
-Unlike a usual regression error $\epsilon$, $\phi_t$ seems to be dependent on $\phi_{t-1}$. Since prices are assumed to converge, $\phi$ should be pulled toward $0$. This would imply a Auto Regressive (AR) model. After some testing various orders, the AR(1) model provided the best AIC, avoiding over fitting. This gives a new equation for $\phi_t$:
+$\phi_t$ is essentially the residual for $S_{B,t} = S_{P,t}$. If $S_P$ follows $S_B$ and they are thought to converge, then $\phi$ should be pushed toward $0$.  This would imply a Auto Regressive (AR) model. After some testing on various orders, the AR(1) model provided the best AIC, avoiding over fitting. This gives a new equation for $\phi_t$:
 
 $$
 \phi_t = \lambda \phi_{t-1} + \sigma z_t \quad \; \lambda, \sigma \in \mathbb{R}
@@ -343,11 +343,11 @@ balance_all <- map_dfr(tickers, ~ run_strategy(.x, securities_wide))
 ggplot(balance_all, aes(x = Date, y = balance, color = ticker)) +
   geom_line(linewidth = 0.75) +
   labs(title = "Wealth over Time by Base",
-       subtitle = "Starting at $1000 each",
+       subtitle = "Starting at $1000 each | Training Data",
        y = NULL, x = NULL,
        color = "Base") +
   scale_y_continuous(labels = scales::dollar) +
-  scale_x_date(date_breaks = "1 month", date_labels = "%b %Y") +
+  scale_x_date(date_breaks = "2 month", date_labels = "%b %Y") +
   theme_dark_mode()
 
 ```
@@ -422,7 +422,7 @@ balance_df = data.frame(
 p1 <- ggplot(balance_df, aes(x = Date, y = balance)) +
   geom_line(color = "green", linewidth = .75) +
   labs(title = "Wealth over Time", 
-       subtitle = "Starting at $1000 with XEM Base",
+       subtitle = "Starting at $1000 with XEM Base | Training Data",
        y = NULL,
        x = NULL) +
   scale_y_continuous(breaks = seq(1000, 2250, 250), labels = scales::dollar) +
@@ -447,10 +447,16 @@ p3 <- ggplot(securities_wide,
 p1
 # p2
 p3
+
+mod_sum = summary(model)
+coef_df <- as.data.frame(mod_sum$coefficients)
+kable(coef_df, format = "html", escape = FALSE, row.names = TRUE) %>%
+  kable_styling(full_width = FALSE)
 ```
+These are the securities which pass the significance threshold. It important to remember that the insignificant securities where removed to avoid over fitting, not because they weren't useful. 
   
 ### Testing Data
-Trading with training data shows that the strategy works in theory, but it utilizes future data. If, instead, the data is split, 80% training and 20% testing, a more realistic test can be performed. The following is using the first 80% of the data to find the weights $\lambda_n$ and the last 20% is used to find $\phi$ and to trade. This test also excludes less significant securities from the pseudo-security in attempt to reduce over fitting, as well as dividing the fraction by 20 and capping to $\pm0.9$ to avoid over leveraging.
+For a more realistic simulation a test train split of 80% training and 20% testing data is used. The following is using the first 80% of the data to find the weights $\gamma_n$ and the last 20% is used to find $\phi$ and to trade. This test also excludes less significant securities from the pseudo-security in attempt to reduce over fitting, as well as dividing the fraction by 20 and capping to $\pm0.9$ to avoid over leveraging.
 ```{r}
 
 run_strategy <- function(ticker, train, test) {
@@ -507,93 +513,116 @@ balance_all <- map_dfr(tickers, ~ run_strategy(.x, train, test))
 ggplot(balance_all, aes(x = Date, y = balance, color = ticker)) +
   geom_line(linewidth = 0.75) +
   labs(title = "Wealth over Time by Base",
-       subtitle = "Starting at $1000 each",
+       subtitle = "Starting at $1000 each | Using 80-20 split",
        y = NULL, x = NULL,
        color = "Base") +
   scale_y_continuous(labels = scales::dollar) +
   scale_x_date(date_breaks = "1 month", date_labels = "%b %Y") +
   theme_dark_mode()
 ```
-
+This is one of many ways to trade using this strategy. A sliding window can be used to find all $\gamma_n$ then trade on the very next day. Here is a example of this:
 ```{r}
-ticker = "XLM"
-# Put PHI and Price data in the same df
-trading_df = test %>% 
-  select(-Date)
-train_trading_df = train %>% 
-  select(-Date)
-
-starting_money = 1000
-balance = c(starting_money)
-phi_t = numeric()
-
-
-model = auto_lm(train_trading_df, ticker, 0.05)
-fit = Arima(model$residuals, order = c(1, 0, 0), include.mean = F)
-
-sigma_2 = as.numeric(fit$sigma2)
-lambda = as.numeric(fit$coef)
-sec_coef = -model$coefficients# -1 because you solve you for the residual by subtracting lm
-sec_coef[[ticker]] = 1
+run_strategy <- function(ticker, data, n_window = 60) {
+  # Prepare data
+  trading_df <- data %>%
+    select(-Date) %>%
+    dplyr::ungroup() %>%
+    as.data.frame()
   
-  
-for (i in (1):(nrow(trading_df)-1)) { # -1 because you cant trade on last day
-  
-  
-  day_data = trading_df[i, ]
-  next_day_data = trading_df[i+1, ]
-  
-  phi = day_data[[ticker]] - predict(model, newdata = day_data)
-  phi_t = c(phi_t, as.numeric(phi))
-  
-  exposure = sum(abs(sec_coef) * as.numeric(day_data[names(sec_coef)])) # abs() because cash is needed to hold sho rt
-  
-  position_fraction = -phi*(1-lambda) / (sigma_2 + (1-lambda)^2*phi^2 ) * exposure / 50
-  
-  max_leverage <- 0.9  # cannot go beyond 90% of your balance
-  position_fraction <- pmin(pmax(position_fraction, -max_leverage), max_leverage)
-  
-
-  position_value = position_fraction * tail(balance, 1)
-  #print(position_fraction)
-  
-  buy_ratio = position_value / exposure
-  
-  buy_sec_amounts = sec_coef * buy_ratio
-  
-  #trading code
-  price_t0 = 0
-  for (j in names(sec_coef)) {
-    price_t0 = price_t0 + as.numeric(day_data[j] * buy_sec_amounts[j])
+  if (as.integer(nrow(trading_df)) <= (n_window + 1)) {
+    stop("Not enough rows in data for sliding window of size ", n_window)
   }
-  price_t1 = 0
-  for (j in names(sec_coef)) {
-    price_t1 = price_t1 + as.numeric(next_day_data[j] * buy_sec_amounts[j])
-  }
-  
-  profit = price_t1-price_t0
-  balance = c(balance, tail(balance, 1) + profit)
 
+  starting_money <- 1000
+  balance <- c(starting_money)
+  phi_t <- numeric()
+
+  # Loop over days starting after first n_window days
+  for (i in (n_window+1):(nrow(trading_df)-1)) {
+    # Sliding window of previous n_window days
+    window_data <- trading_df[(i-n_window):(i-1), ]
+
+    # Fit model on sliding window
+    model <- auto_lm(window_data, ticker, 0.05)
+    fit <- Arima(model$residuals, order = c(1, 0, 0), include.mean = FALSE)
+
+    sigma_2 <- as.numeric(fit$sigma2)
+    lambda <- as.numeric(fit$coef)
+    sec_coef <- -model$coefficients
+    sec_coef[[ticker]] <- 1
+
+    # Data for today and next day
+    day_data <- trading_df[i, ]
+    next_day_data <- trading_df[i+1, ]
+
+    # Compute residual
+    phi <- day_data[[ticker]] - predict(model, newdata = day_data)
+    phi_t <- c(phi_t, as.numeric(phi))
+
+    exposure <- sum(abs(sec_coef) * as.numeric(day_data[names(sec_coef)]))
+
+    position_fraction <- -phi*(1-lambda) / (sigma_2 + (1-lambda)^2*phi^2) * exposure / 20
+    position_fraction <- pmin(pmax(position_fraction, -0.9), 0.9)
+
+    position_value <- position_fraction * tail(balance, 1)
+    buy_ratio <- position_value / exposure
+    buy_sec_amounts <- sec_coef * buy_ratio
+
+    price_t0 <- sum(as.numeric(day_data[names(sec_coef)] * buy_sec_amounts))
+    price_t1 <- sum(as.numeric(next_day_data[names(sec_coef)] * buy_sec_amounts))
+
+    profit <- price_t1 - price_t0
+    balance <- c(balance, tail(balance, 1) + profit)
+  }
+
+  # Return only the dates starting from first traded day
+  data.frame(
+    Date = data$Date[(n_window+1):nrow(trading_df)],
+    balance = balance,
+    ticker = ticker
+  )
 }
 
-balance_df = data.frame(
-  Date = test$Date[(1):nrow(test)],
-  balance = balance,
-  phi = c(0, phi_t)
-)
 
-mod_sum = summary(model)
-coef_df <- as.data.frame(mod_sum$coefficients)
-kable(coef_df, format = "html", escape = FALSE, row.names = TRUE) %>%
-  kable_styling(full_width = FALSE)
+# ---- Window sizes ----
+window_sizes <- c(120, 90)
+tickers <- colnames(securities_wide %>% select(-Date))
+
+# ---- Run strategy for all tickers and all window sizes ----
+balance_all <- map_dfr(window_sizes, function(w) {
+  map_dfr(tickers, ~ run_strategy(.x, securities_wide, n_window = w)) %>%
+    mutate(window = paste0(w, " days"))
+})
+
+# ---- Plot with separate section for each window ----
+ggplot(balance_all, aes(x = Date, y = balance, color = ticker)) +
+  geom_line(linewidth = 0.75) +
+  facet_wrap(~window, scales = "fixed") +
+  labs(title = "Wealth over Time by Base",
+       subtitle = "Starting at $1000 each  |  Sliding Window",
+       y = NULL, x = NULL,
+       color = "Base") +
+  scale_y_continuous(labels = scales::dollar, breaks = seq(500, 2000, 250)) +
+  scale_x_date(date_breaks = "1 month", date_labels = "%b %Y") +
+  theme_dark_mode() +
+  theme(
+    strip.text.x = element_text(face = "bold", size = 12,
+                                color = "grey80")
+  )
+  
+
 ```
-These are the securities which pass the significance threshold. It important to remember that the insignificant securities where removed to avoid over fitting, not because they weren't useful. 
+It seems as though the theory doesn't transfer well to real data. Perhaps the model is overfit. Other methods could be used to reduce overfitting and make a better model, such improvements will be listed in the Improvments tab.
+
 
 ## Improvements
 
 - Security selection more rigorous than P-value / Significance thresholds
-- Use gradiant decent to find security weights
-_ Only trade on exteame $\phi$ values
+- Use gradient decent to find security weights
+- Only trade on extreme $\phi$ values
+- Finding precise trade sizing using numerical approximation
+- Different Bases, e.g. $S_B=0$
+- Different time intervals, e.g. 1min, 1hr, 1wk
 
 
 :::
