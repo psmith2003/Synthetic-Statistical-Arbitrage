@@ -1,2 +1,2 @@
-# Correlated-Securities-Hedging-and-Trading
-By finding the difference in correlated security prices you can hedge those securities to trade the price difference.
+# Synthetic Statistical Arbitrage
+A synthetic security can be created to perform statistical arbitrage on. 
