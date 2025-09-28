@@ -136,26 +136,24 @@ window.Quarto = {
 </header>
 
 
-<p># Regression Residual Trading</p>
 <div class="tabset-margin-container"></div><div class="panel-tabset">
 <ul class="nav nav-tabs" role="tablist"><li class="nav-item" role="presentation"><a class="nav-link active" id="tabset-1-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-1-1" role="tab" aria-controls="tabset-1-1" aria-selected="true" href="">Overview</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-1-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-1-2" role="tab" aria-controls="tabset-1-2" aria-selected="false" href="">Formulation</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-1-3-tab" data-bs-toggle="tab" data-bs-target="#tabset-1-3" role="tab" aria-controls="tabset-1-3" aria-selected="false" href="">Implementation</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-1-4-tab" data-bs-toggle="tab" data-bs-target="#tabset-1-4" role="tab" aria-controls="tabset-1-4" aria-selected="false" href="">Improvements</a></li></ul>
 <div class="tab-content">
 <div id="tabset-1-1" class="tab-pane active" role="tabpanel" aria-labelledby="tabset-1-1-tab">
-<p>The foundation of this trading strategy is that traders will trade similar securities in a similar fashion. For example let’s consider two securities denoted <span class="math inline">\(S_1\)</span> and <span class="math inline">\(S_2\)</span>. We assume that traders will expect for these to move together. If <span class="math inline">\(S_1\)</span> or <span class="math inline">\(S_2\)</span> deviate from one another, we expect them to converge. This phenomena can be profited from by buying one security and shorting the other. This strategy will tell us which security to short and which to buy and in what quantities. It will also allow for more securities to be included, which improves the model.</p>
+<p>The foundation of this trading strategy is that traders will trade similar securities in a similar fashion. For example let’s consider two securities, who’s prices are denoted as <span class="math inline">\(S_B\)</span> and <span class="math inline">\(S_P\)</span>. We assume that traders will expect for these to move together. If <span class="math inline">\(S_B\)</span> or <span class="math inline">\(S_P\)</span> deviate from one another, we expect them to converge. This phenomena can be profited from by buying one security and shorting the other. The following strategy will tell us which security to short and which to buy and in what quantities. It will also allow for more securities to be included, which improves the model.</p>
 </div>
 <div id="tabset-1-2" class="tab-pane" role="tabpanel" aria-labelledby="tabset-1-2-tab">
-<section id="relating-s_1-and-s_2" class="level3">
-<h3 class="anchored" data-anchor-id="relating-s_1-and-s_2">Relating <span class="math inline">\(S_1\)</span> and <span class="math inline">\(S_2\)</span></h3>
-<p>To describe the phenomena described in the overview consider two securities denoted <span class="math inline">\(S_B\)</span> and <span class="math inline">\(S_P\)</span>, where <span class="math inline">\(S_B\)</span> is the “Base security” and <span class="math inline">\(S_P\)</span> is the “Pseudo-Security”.<br>
+<section id="relating-s_b-and-s_p" class="level3">
+<h3 class="anchored" data-anchor-id="relating-s_b-and-s_p">Relating <span class="math inline">\(S_B\)</span> and <span class="math inline">\(S_P\)</span></h3>
+<p>To describe the phenomena explained in the overview, consider two securities denoted <span class="math inline">\(S_B\)</span> and <span class="math inline">\(S_P\)</span>, where <span class="math inline">\(S_B\)</span> is the “Base security” and <span class="math inline">\(S_P\)</span> is the “Pseudo-Security”.<br>
 Let <span class="math display">\[S_{B,t} = S_{P,t} + \phi_t\]</span> where <span class="math inline">\(\phi_t \in \mathbb{R}\)</span>.<br>
-<span class="math inline">\(\phi_t\)</span> is essentially the residual for <span class="math inline">\(S_{B,t} = S_{P,t}\)</span>. If <span class="math inline">\(S_P\)</span> follows <span class="math inline">\(S_B\)</span> and they are thought to converge, then <span class="math inline">\(\phi\)</span> should be pushed toward <span class="math inline">\(0\)</span>.<br>
 While the base(<span class="math inline">\(S_B\)</span>) is just a security, The pseudo-security(<span class="math inline">\(S_B\)</span>) is more complex. It is a linear combination of securities that follows <span class="math inline">\(S_B\)</span>. By substituting <span class="math inline">\(S_{P,t} = \sum_{i=1}^{n} \gamma_i S_{i,t}\)</span> we get: <span class="math display">\[S_{B,t} = \sum_{i=1}^{n} \gamma_i S_{i,t} + \phi_t\]</span><br>
-where <span class="math inline">\(\lambda_i \in \mathbb{R}\)</span>.<br>
-All the <span class="math inline">\(\lambda_i\)</span> can be found using various methods. Least squares will be used here, though gradient decent could give a less overfit model.</p>
+where <span class="math inline">\(\gamma_i \in \mathbb{R}\)</span>.<br>
+All <span class="math inline">\(\gamma_i\)</span> can be found using various methods. Least squares will be used here, though gradient decent could give a less overfit model.</p>
 </section>
 <section id="how-to-trade-phi" class="level3">
 <h3 class="anchored" data-anchor-id="how-to-trade-phi">How to trade <span class="math inline">\(\phi\)</span></h3>
-<p>Using the formula <span class="math inline">\(S_{B,t} = \sum_{i=1}^{n} \gamma_i S_{i,t} + \phi_t\)</span>, <span class="math inline">\(phi_t\)</span> can be solved for to get: <span class="math display">\[\phi_t = S_{B,t} - \sum_{i=1}^{n} \gamma_i S_{i,t}\]</span> The <span class="math inline">\(\gamma_i\)</span> provides weights for each security to be bought at, as well as a weight of <span class="math inline">\(1\)</span> for <span class="math inline">\(S_B\)</span>. Each security <span class="math inline">\(S_i\)</span> will have <span class="math inline">\(\gamma_i\)</span> shares bought, negative <span class="math inline">\(\gamma\)</span> means going short.</p>
+<p>Using the formula <span class="math inline">\(S_{B,t} = \sum_{i=1}^{n} \gamma_i S_{i,t} + \phi_t\)</span>, solving for <span class="math inline">\(\phi_t\)</span> gives: <span class="math display">\[\phi_t = S_{B,t} - \sum_{i=1}^{n} \gamma_i S_{i,t}\]</span> The <span class="math inline">\(\gamma_i\)</span> provides weights for each security to be bought at, as well as a weight of <span class="math inline">\(1\)</span> for <span class="math inline">\(S_B\)</span>. Each security <span class="math inline">\(S_i\)</span> will have <span class="math inline">\(\gamma_i\)</span> shares bought, negative <span class="math inline">\(\gamma_i\)</span> means going short.</p>
 </section>
 <section id="properties-of-phi" class="level3">
 <h3 class="anchored" data-anchor-id="properties-of-phi">Properties of <span class="math inline">\(\phi\)</span></h3>
@@ -416,10 +414,12 @@ All the <span class="math inline">\(\lambda_i\)</span> can be found using variou
 <section id="position-sizing" class="level3">
 <h3 class="anchored" data-anchor-id="position-sizing">Position Sizing</h3>
 <p>To size trades, log utility maximization will be used. This will help avoid ruin. Wealth follows the formula: <span class="math display">\[W_{t+1} = W_t (1 + f_t R_{t+1})\]</span> where <span class="math inline">\(W_{t+1}\)</span> is tomorrows wealth, <span class="math inline">\(W_t\)</span> is today’s wealth, <span class="math inline">\(R_{t+1}\)</span> is tomorrow’s return on a trade, and <span class="math inline">\(f_{t}\)</span> is the fraction of wealth used in a trade.<br>
-Using log utility maximization we need to maximize: <span class="math display">\[\mathbb{E}[\ln(1+f_{t} R_t)]\]</span> Substituting <span class="math display">\[
+Using log utility maximization we need to maximize: <span class="math display">\[
+\mathbb{E}\!\left[ \ln\!\bigl(1 + f_{t} R_{t+1}\bigr) \right]
+\]</span> Substituting <span class="math display">\[
 R_{t+1} = \frac{\phi_{t+1}-\phi_{t}}{C_t}
 \]</span> where <span class="math inline">\(C_{t}\)</span> is the cost of purchasing <span class="math inline">\(\phi_{t}\)</span>. We then get: <span class="math display">\[
-\mathbb{E}[\ln(1+f_{t} \frac{\phi_{t+1}-\phi_{t}}{C_{t}})]
+\mathbb{E}\!\left[ \ln\!\biggl(1 + f_{t} \frac{\phi_{t+1} - \phi_{t}}{C_{t}}\biggr) \right]
 \]</span></p>
 <p>Since <span class="math inline">\(-\infty&lt;\phi&lt;\infty\)</span> the expected value cannot be analytically evaluated. Instead, the second order Taylor approximation can be used. Higher orders can be used for greater accuracy. The new approximation is: <span class="math display">\[
 \begin{align}
@@ -471,7 +471,8 @@ f_t = -\frac{C_{t}(1-\lambda)\phi_t}{(1-\lambda)^2\phi_t^2+\sigma^2}
 <section id="training-data" class="level3">
 <h3 class="anchored" data-anchor-id="training-data">Training Data</h3>
 <p>First, to ensure the mathematics behind the strategy are correct, trading will be simulated on the training data. This is to check for flaws in the underlying theory.<br>
-The fraction of wealth equation derived in the Formulation section can over leverage, so a cap of <span class="math inline">\(\pm0.9\)</span> is set on the fraction, as well as dividing it by <span class="math inline">\(20\)</span>. This coefficient is a way to increase or decrease risk while using the strategy.</p>
+The fraction of wealth equation derived in the Formulation section can over leverage, so the fraction is dividing by <span class="math inline">\(20\)</span> and a cap of <span class="math inline">\(\pm0.9\)</span> used. This reduces risk and safeguards against outliers. A number other than <span class="math inline">\(20\)</span> can be used to match personal risk tolerance.<br>
+This test also excludes less significant securities from the pseudo-security in attempt to reduce overfitting.</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
@@ -544,7 +545,7 @@ The fraction of wealth equation derived in the Formulation section can over leve
 </div>
 </div>
 <p>This shows that the assumption of <span class="math inline">\(\phi\)</span> being a AR(1) is at least partially true, as well as confirming that the trade sizing found in the Formulation section is working.</p>
-<p>The following is the a closer look at XEM as a base. Even during downwards movement in the base the strategy can return a profit.</p>
+<p>The following is the a closer look at XEM as a base. Note that even during downwards movement in the base the strategy can return a profit.</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
@@ -558,7 +559,7 @@ The fraction of wealth equation derived in the Formulation section can over leve
 <span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>phi_t <span class="ot">=</span> <span class="fu">numeric</span>()</span>
 <span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>model <span class="ot">=</span> <span class="fu">auto_lm</span>(trading_df, ticker, <span class="fl">1.00</span>)</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>model <span class="ot">=</span> <span class="fu">auto_lm</span>(trading_df, ticker, <span class="fl">0.1</span>)</span>
 <span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>fit <span class="ot">=</span> <span class="fu">Arima</span>(model<span class="sc">$</span>residuals, <span class="at">order =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>), <span class="at">include.mean =</span> F)</span>
 <span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>sigma_2 <span class="ot">=</span> <span class="fu">as.numeric</span>(fit<span class="sc">$</span>sigma2)</span>
@@ -678,137 +679,74 @@ The fraction of wealth equation derived in the Formulation section can over leve
 </thead>
 <tbody>
 <tr class="odd">
-<td style="text-align: left;">AAVE</td>
-<td style="text-align: right;">0.0001149</td>
-<td style="text-align: right;">0.0001340</td>
-<td style="text-align: right;">0.8573124</td>
-<td style="text-align: right;">0.3920741</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">BNB</td>
-<td style="text-align: right;">0.0002128</td>
-<td style="text-align: right;">0.0001870</td>
-<td style="text-align: right;">1.1380563</td>
-<td style="text-align: right;">0.2561609</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">BTC</td>
-<td style="text-align: right;">0.0000017</td>
-<td style="text-align: right;">0.0000017</td>
-<td style="text-align: right;">0.9712177</td>
-<td style="text-align: right;">0.3323566</td>
-</tr>
-<tr class="even">
 <td style="text-align: left;">ADA</td>
-<td style="text-align: right;">0.1688994</td>
-<td style="text-align: right;">0.0378065</td>
-<td style="text-align: right;">4.4674672</td>
-<td style="text-align: right;">0.0000119</td>
+<td style="text-align: right;">0.1643243</td>
+<td style="text-align: right;">0.0284003</td>
+<td style="text-align: right;">5.785999</td>
+<td style="text-align: right;">0.0000000</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td style="text-align: left;">LINK</td>
-<td style="text-align: right;">0.0037530</td>
-<td style="text-align: right;">0.0025486</td>
-<td style="text-align: right;">1.4725536</td>
-<td style="text-align: right;">0.1420998</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">ATOM</td>
-<td style="text-align: right;">0.0028293</td>
-<td style="text-align: right;">0.0033742</td>
-<td style="text-align: right;">0.8385104</td>
-<td style="text-align: right;">0.4025264</td>
+<td style="text-align: right;">0.0035640</td>
+<td style="text-align: right;">0.0018272</td>
+<td style="text-align: right;">1.950536</td>
+<td style="text-align: right;">0.0521664</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">CRO</td>
-<td style="text-align: right;">-0.2263950</td>
-<td style="text-align: right;">0.1948246</td>
-<td style="text-align: right;">-1.1620455</td>
-<td style="text-align: right;">0.2462992</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">DOGE</td>
-<td style="text-align: right;">-0.1031401</td>
-<td style="text-align: right;">0.1161783</td>
-<td style="text-align: right;">-0.8877740</td>
-<td style="text-align: right;">0.3754956</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">EOS</td>
-<td style="text-align: right;">0.0045942</td>
-<td style="text-align: right;">0.0096425</td>
-<td style="text-align: right;">0.4764503</td>
-<td style="text-align: right;">0.6341600</td>
-</tr>
-<tr class="even">
 <td style="text-align: left;">ETH</td>
-<td style="text-align: right;">-0.0003197</td>
-<td style="text-align: right;">0.0000427</td>
-<td style="text-align: right;">-7.4888474</td>
+<td style="text-align: right;">-0.0003330</td>
+<td style="text-align: right;">0.0000258</td>
+<td style="text-align: right;">-12.904151</td>
+<td style="text-align: right;">0.0000000</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">MIOTA</td>
+<td style="text-align: right;">-0.2357942</td>
+<td style="text-align: right;">0.0388621</td>
+<td style="text-align: right;">-6.067463</td>
 <td style="text-align: right;">0.0000000</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">MIOTA</td>
-<td style="text-align: right;">-0.2470851</td>
-<td style="text-align: right;">0.0526307</td>
-<td style="text-align: right;">-4.6946914</td>
-<td style="text-align: right;">0.0000044</td>
-</tr>
-<tr class="even">
 <td style="text-align: left;">LTC</td>
-<td style="text-align: right;">0.0011058</td>
-<td style="text-align: right;">0.0004226</td>
-<td style="text-align: right;">2.6163705</td>
-<td style="text-align: right;">0.0094152</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">XMR</td>
-<td style="text-align: right;">0.0010553</td>
-<td style="text-align: right;">0.0002318</td>
-<td style="text-align: right;">4.5529777</td>
-<td style="text-align: right;">0.0000082</td>
+<td style="text-align: right;">0.0013217</td>
+<td style="text-align: right;">0.0002744</td>
+<td style="text-align: right;">4.816618</td>
+<td style="text-align: right;">0.0000025</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">DOT</td>
-<td style="text-align: right;">0.0062938</td>
-<td style="text-align: right;">0.0022109</td>
-<td style="text-align: right;">2.8466954</td>
-<td style="text-align: right;">0.0047756</td>
+<td style="text-align: left;">XMR</td>
+<td style="text-align: right;">0.0011436</td>
+<td style="text-align: right;">0.0001652</td>
+<td style="text-align: right;">6.922358</td>
+<td style="text-align: right;">0.0000000</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">SOL</td>
-<td style="text-align: right;">-0.0009418</td>
-<td style="text-align: right;">0.0017224</td>
-<td style="text-align: right;">-0.5467599</td>
-<td style="text-align: right;">0.5850200</td>
+<td style="text-align: left;">DOT</td>
+<td style="text-align: right;">0.0075211</td>
+<td style="text-align: right;">0.0015652</td>
+<td style="text-align: right;">4.805074</td>
+<td style="text-align: right;">0.0000026</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">XLM</td>
-<td style="text-align: right;">0.3495579</td>
-<td style="text-align: right;">0.1605677</td>
-<td style="text-align: right;">2.1770120</td>
-<td style="text-align: right;">0.0303935</td>
+<td style="text-align: right;">0.5516874</td>
+<td style="text-align: right;">0.1099858</td>
+<td style="text-align: right;">5.015985</td>
+<td style="text-align: right;">0.0000010</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">TRX</td>
-<td style="text-align: right;">-1.4750140</td>
-<td style="text-align: right;">0.6367465</td>
-<td style="text-align: right;">-2.3164855</td>
-<td style="text-align: right;">0.0213218</td>
+<td style="text-align: right;">-1.3998900</td>
+<td style="text-align: right;">0.3985262</td>
+<td style="text-align: right;">-3.512667</td>
+<td style="text-align: right;">0.0005214</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">UNI</td>
-<td style="text-align: right;">0.0039297</td>
-<td style="text-align: right;">0.0022808</td>
-<td style="text-align: right;">1.7229325</td>
-<td style="text-align: right;">0.0861083</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">XRP</td>
-<td style="text-align: right;">0.0299196</td>
-<td style="text-align: right;">0.0461054</td>
-<td style="text-align: right;">0.6489393</td>
-<td style="text-align: right;">0.5169593</td>
+<td style="text-align: right;">0.0054319</td>
+<td style="text-align: right;">0.0016646</td>
+<td style="text-align: right;">3.263185</td>
+<td style="text-align: right;">0.0012463</td>
 </tr>
 </tbody>
 </table>
@@ -820,7 +758,8 @@ The fraction of wealth equation derived in the Formulation section can over leve
 </section>
 <section id="testing-data" class="level3">
 <h3 class="anchored" data-anchor-id="testing-data">Testing Data</h3>
-<p>For a more realistic simulation a test train split of 80% training and 20% testing data is used. The following is using the first 80% of the data to find the weights <span class="math inline">\(\gamma_n\)</span> and the last 20% is used to find <span class="math inline">\(\phi\)</span> and to trade. This test also excludes less significant securities from the pseudo-security in attempt to reduce over fitting, as well as dividing the fraction by 20 and capping to <span class="math inline">\(\pm0.9\)</span> to avoid over leveraging.</p>
+<p>For a more realistic simulation a test-train-split of 80% training and 20% testing data is used. The following uses the first 80% of the data to find the weights <span class="math inline">\(\gamma_i\)</span> and the last 20% to find and trade <span class="math inline">\(\phi\)</span>.<br>
+The trade size will be divided by 20 and capping to <span class="math inline">\(\pm0.9\)</span> to avoid over leveraging.</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
@@ -893,7 +832,7 @@ The fraction of wealth equation derived in the Formulation section can over leve
 </div>
 </div>
 </div>
-<p>This is one of many ways to trade using this strategy. A sliding window can be used to find all <span class="math inline">\(\gamma_n\)</span> then trade on the very next day. Here is a example of this:</p>
+<p>This is one of many ways to trade using this strategy. A sliding window can be used to find all <span class="math inline">\(\gamma_i\)</span> then trade on the very next day. Here is a example of this:</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
@@ -966,7 +905,7 @@ The fraction of wealth equation derived in the Formulation section can over leve
 <span id="cb10-67"><a href="#cb10-67" aria-hidden="true" tabindex="-1"></a><span class="co"># ---- Run strategy for all tickers and all window sizes ----</span></span>
 <span id="cb10-68"><a href="#cb10-68" aria-hidden="true" tabindex="-1"></a>balance_all <span class="ot">&lt;-</span> <span class="fu">map_dfr</span>(window_sizes, <span class="cf">function</span>(w) {</span>
 <span id="cb10-69"><a href="#cb10-69" aria-hidden="true" tabindex="-1"></a>  <span class="fu">map_dfr</span>(tickers, <span class="sc">~</span> <span class="fu">run_strategy</span>(.x, securities_wide, <span class="at">n_window =</span> w)) <span class="sc">%&gt;%</span></span>
-<span id="cb10-70"><a href="#cb10-70" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">window =</span> <span class="fu">paste0</span>(w, <span class="st">" days"</span>))</span>
+<span id="cb10-70"><a href="#cb10-70" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">window =</span> <span class="fu">paste0</span>(w, <span class="st">" day window"</span>))</span>
 <span id="cb10-71"><a href="#cb10-71" aria-hidden="true" tabindex="-1"></a>})</span>
 <span id="cb10-72"><a href="#cb10-72" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb10-73"><a href="#cb10-73" aria-hidden="true" tabindex="-1"></a><span class="co"># ---- Plot with separate section for each window ----</span></span>
@@ -978,7 +917,7 @@ The fraction of wealth equation derived in the Formulation section can over leve
 <span id="cb10-79"><a href="#cb10-79" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="cn">NULL</span>, <span class="at">x =</span> <span class="cn">NULL</span>,</span>
 <span id="cb10-80"><a href="#cb10-80" aria-hidden="true" tabindex="-1"></a>       <span class="at">color =</span> <span class="st">"Base"</span>) <span class="sc">+</span></span>
 <span id="cb10-81"><a href="#cb10-81" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_y_continuous</span>(<span class="at">labels =</span> scales<span class="sc">::</span>dollar, <span class="at">breaks =</span> <span class="fu">seq</span>(<span class="dv">500</span>, <span class="dv">2000</span>, <span class="dv">250</span>)) <span class="sc">+</span></span>
-<span id="cb10-82"><a href="#cb10-82" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_x_date</span>(<span class="at">date_breaks =</span> <span class="st">"1 month"</span>, <span class="at">date_labels =</span> <span class="st">"%b %Y"</span>) <span class="sc">+</span></span>
+<span id="cb10-82"><a href="#cb10-82" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_x_date</span>(<span class="at">date_breaks =</span> <span class="st">"2 month"</span>, <span class="at">date_labels =</span> <span class="st">"%b %Y"</span>) <span class="sc">+</span></span>
 <span id="cb10-83"><a href="#cb10-83" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_dark_mode</span>() <span class="sc">+</span></span>
 <span id="cb10-84"><a href="#cb10-84" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(</span>
 <span id="cb10-85"><a href="#cb10-85" aria-hidden="true" tabindex="-1"></a>    <span class="at">strip.text.x =</span> <span class="fu">element_text</span>(<span class="at">face =</span> <span class="st">"bold"</span>, <span class="at">size =</span> <span class="dv">12</span>,</span>
@@ -993,7 +932,7 @@ The fraction of wealth equation derived in the Formulation section can over leve
 </div>
 </div>
 </div>
-<p>It seems as though the theory doesn’t transfer well to real data. Perhaps the model is overfit. Other methods could be used to reduce overfitting and make a better model, such improvements will be listed in the Improvments tab.</p>
+<p>It seems as though the theory doesn’t transfer well to real data. Perhaps the model is overfit. Other methods could be used to reduce overfitting and make a better model, such improvements will be listed in the Improvements tab.</p>
 </section>
 </div>
 <div id="tabset-1-4" class="tab-pane" role="tabpanel" aria-labelledby="tabset-1-4-tab">

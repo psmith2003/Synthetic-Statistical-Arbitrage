@@ -17,21 +17,21 @@ code-fold: true
 ::: {.panel-tabset}
 
 ## Overview
-The foundation of this trading strategy is that traders will trade similar securities in a similar fashion. For example let's consider two securities denoted $S_1$ and $S_2$. We assume that traders will expect for these to move together. If $S_1$ or $S_2$ deviate from one another, we expect them to converge. This phenomena can be profited from by buying one security and shorting the other. This strategy will tell us which security to short and which to buy and in what quantities. It will also allow for more securities to be included, which improves the model.
+The foundation of this trading strategy is that traders will trade similar securities in a similar fashion. For example let's consider two securities, who's prices are denoted as $S_B$ and $S_P$. We assume that traders will expect for these to move together. If $S_B$ or $S_P$ deviate from one another, we expect them to converge. This phenomena can be profited from by buying one security and shorting the other. The following strategy will tell us which security to short and which to buy and in what quantities. It will also allow for more securities to be included, which improves the model.
 
 
 ## Formulation
-### Relating $S_1$ and $S_2$
-To describe the phenomena described in the overview consider two securities denoted $S_B$ and $S_P$, where $S_B$ is the "Base security" and $S_P$ is the "Pseudo-Security".  
+### Relating $S_B$ and $S_P$
+To describe the phenomena explained in the overview, consider two securities denoted $S_B$ and $S_P$, where $S_B$ is the "Base security" and $S_P$ is the "Pseudo-Security".  
 Let $$S_{B,t} = S_{P,t} + \phi_t$$
 where $\phi_t \in \mathbb{R}$.  
 While the base($S_B$) is just a security, The pseudo-security($S_B$) is more complex. It is a linear combination of securities that follows $S_B$. By substituting $S_{P,t} = \sum_{i=1}^{n} \gamma_i S_{i,t}$ we get: $$S_{B,t} = \sum_{i=1}^{n} \gamma_i S_{i,t} + \phi_t$$  
 where $\gamma_i \in \mathbb{R}$.  
-All the $\gamma_i$ can be found using various methods. Least squares will be used here, though gradient decent could give a less overfit model.
+All $\gamma_i$ can be found using various methods. Least squares will be used here, though gradient decent could give a less overfit model.
 
 
 ### How to trade $\phi$
-Using the formula $S_{B,t} = \sum_{i=1}^{n} \gamma_i S_{i,t} + \phi_t$, $\phi_t$ can be solved for to get: $$\phi_t = S_{B,t} - \sum_{i=1}^{n} \gamma_i S_{i,t}$$
+Using the formula $S_{B,t} = \sum_{i=1}^{n} \gamma_i S_{i,t} + \phi_t$, solving for $\phi_t$ gives: $$\phi_t = S_{B,t} - \sum_{i=1}^{n} \gamma_i S_{i,t}$$
 The $\gamma_i$ provides weights for each security to be bought at, as well as a weight of $1$ for $S_B$. Each security $S_i$ will have $\gamma_i$ shares bought, negative $\gamma_i$ means going short.
 
 ### Properties of $\phi$
@@ -218,14 +218,17 @@ Though $\sigma$ is similar, the increased $\lambda$ results in reduced trade pro
 
 ### Position Sizing
 To size trades, log utility maximization will be used. This will help avoid ruin. Wealth follows the formula: $$W_{t+1} = W_t (1 + f_t R_{t+1})$$ where $W_{t+1}$ is tomorrows wealth, $W_t$ is today's wealth, $R_{t+1}$ is tomorrow's return on a trade, and $f_{t}$ is the fraction of wealth used in a trade.  
-Using log utility maximization we need to maximize: $$\mathbb{E}[\ln(1+f_{t} R_t)]$$
+Using log utility maximization we need to maximize: 
+$$
+\mathbb{E}\!\left[ \ln\!\bigl(1 + f_{t} R_{t+1}\bigr) \right]
+$$
 Substituting 
 $$
 R_{t+1} = \frac{\phi_{t+1}-\phi_{t}}{C_t}
 $$
 where $C_{t}$ is the cost of purchasing $\phi_{t}$. We then get: 
 $$
-\mathbb{E}[\ln(1+f_{t} \frac{\phi_{t+1}-\phi_{t}}{C_{t}})]
+\mathbb{E}\!\left[ \ln\!\biggl(1 + f_{t} \frac{\phi_{t+1} - \phi_{t}}{C_{t}}\biggr) \right]
 $$
 
 Since $-\infty<\phi<\infty$ the expected value cannot be analytically evaluated. Instead, the second order Taylor approximation can be used. Higher orders can be used for greater accuracy. The new approximation is: 
@@ -287,7 +290,8 @@ This section will explore the performance of the trading strategy against real d
   
 ### Training Data
 First, to ensure the mathematics behind the strategy are correct, trading will be simulated on the training data. This is to check for flaws in the underlying theory.  
-The fraction of wealth equation derived in the Formulation section can over leverage, so a cap of $\pm0.9$ is set on the fraction, as well as dividing it by $20$. This coefficient is a way to increase or decrease risk while using the strategy.
+The fraction of wealth equation derived in the Formulation section can over leverage, so the fraction is dividing by $20$ and a cap of $\pm0.9$ used. This reduces risk and safeguards against outliers. A number other than $20$ can be used to match personal risk tolerance.  
+This test also excludes less significant securities from the pseudo-security in attempt to reduce overfitting.
 ```{r}
 
 run_strategy <- function(ticker, data) {
@@ -353,7 +357,7 @@ ggplot(balance_all, aes(x = Date, y = balance, color = ticker)) +
 ```
 This shows that the assumption of $\phi$ being a AR(1) is at least partially true, as well as confirming that the trade sizing found in the Formulation section is working.  
   
-The following is the a closer look at XEM as a base. Even during downwards movement in the base the strategy can return a profit.
+The following is the a closer look at XEM as a base. Note that even during downwards movement in the base the strategy can return a profit.
 ```{r}
 ticker = "XEM"
 # Put PHI and Price data in the same df
@@ -365,7 +369,7 @@ balance = c(starting_money)
 phi_t = numeric()
 
 
-model = auto_lm(trading_df, ticker, 1.00)
+model = auto_lm(trading_df, ticker, 0.1)
 fit = Arima(model$residuals, order = c(1, 0, 0), include.mean = F)
 
 sigma_2 = as.numeric(fit$sigma2)
@@ -456,7 +460,8 @@ kable(coef_df, format = "html", escape = FALSE, row.names = TRUE) %>%
 These are the securities which pass the significance threshold. It important to remember that the insignificant securities where removed to avoid over fitting, not because they weren't useful. 
   
 ### Testing Data
-For a more realistic simulation a test train split of 80% training and 20% testing data is used. The following is using the first 80% of the data to find the weights $\gamma_n$ and the last 20% is used to find $\phi$ and to trade. This test also excludes less significant securities from the pseudo-security in attempt to reduce over fitting, as well as dividing the fraction by 20 and capping to $\pm0.9$ to avoid over leveraging.
+For a more realistic simulation a test-train-split of 80% training and 20% testing data is used. The following uses the first 80% of the data to find the weights $\gamma_i$ and the last 20% to find and trade $\phi$.   
+The trade size will be divided by 20 and capping to $\pm0.9$ to avoid over leveraging.
 ```{r}
 
 run_strategy <- function(ticker, train, test) {
@@ -520,7 +525,7 @@ ggplot(balance_all, aes(x = Date, y = balance, color = ticker)) +
   scale_x_date(date_breaks = "1 month", date_labels = "%b %Y") +
   theme_dark_mode()
 ```
-This is one of many ways to trade using this strategy. A sliding window can be used to find all $\gamma_n$ then trade on the very next day. Here is a example of this:
+This is one of many ways to trade using this strategy. A sliding window can be used to find all $\gamma_i$ then trade on the very next day. Here is a example of this:
 ```{r}
 run_strategy <- function(ticker, data, n_window = 60) {
   # Prepare data
@@ -591,7 +596,7 @@ tickers <- colnames(securities_wide %>% select(-Date))
 # ---- Run strategy for all tickers and all window sizes ----
 balance_all <- map_dfr(window_sizes, function(w) {
   map_dfr(tickers, ~ run_strategy(.x, securities_wide, n_window = w)) %>%
-    mutate(window = paste0(w, " days"))
+    mutate(window = paste0(w, " day window"))
 })
 
 # ---- Plot with separate section for each window ----
@@ -603,7 +608,7 @@ ggplot(balance_all, aes(x = Date, y = balance, color = ticker)) +
        y = NULL, x = NULL,
        color = "Base") +
   scale_y_continuous(labels = scales::dollar, breaks = seq(500, 2000, 250)) +
-  scale_x_date(date_breaks = "1 month", date_labels = "%b %Y") +
+  scale_x_date(date_breaks = "2 month", date_labels = "%b %Y") +
   theme_dark_mode() +
   theme(
     strip.text.x = element_text(face = "bold", size = 12,
@@ -612,7 +617,7 @@ ggplot(balance_all, aes(x = Date, y = balance, color = ticker)) +
   
 
 ```
-It seems as though the theory doesn't transfer well to real data. Perhaps the model is overfit. Other methods could be used to reduce overfitting and make a better model, such improvements will be listed in the Improvments tab.
+It seems as though the theory doesn't transfer well to real data. Perhaps the model is overfit. Other methods could be used to reduce overfitting and make a better model, such improvements will be listed in the Improvements tab.
 
 
 ## Improvements
