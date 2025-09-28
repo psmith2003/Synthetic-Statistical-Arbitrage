@@ -8,7 +8,7 @@
 
 <meta name="author" content="Parker Smith">
 
-<title>Regression Residual Trading</title>
+<title>Synthetic Statistical Arbitrage</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -58,19 +58,19 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </style>
 
 
-<script src="trading_residuals_report_files/libs/clipboard/clipboard.min.js"></script>
-<script src="trading_residuals_report_files/libs/quarto-html/quarto.js"></script>
-<script src="trading_residuals_report_files/libs/quarto-html/popper.min.js"></script>
-<script src="trading_residuals_report_files/libs/quarto-html/tippy.umd.min.js"></script>
-<script src="trading_residuals_report_files/libs/quarto-html/anchor.min.js"></script>
-<link href="trading_residuals_report_files/libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="trading_residuals_report_files/libs/quarto-html/quarto-syntax-highlighting-dark.css" rel="stylesheet" id="quarto-text-highlighting-styles">
-<script src="trading_residuals_report_files/libs/bootstrap/bootstrap.min.js"></script>
-<link href="trading_residuals_report_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="trading_residuals_report_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="dark">
-<script src="trading_residuals_report_files/libs/kePrint-0.0.1/kePrint.js"></script>
+<script src="report_files/libs/clipboard/clipboard.min.js"></script>
+<script src="report_files/libs/quarto-html/quarto.js"></script>
+<script src="report_files/libs/quarto-html/popper.min.js"></script>
+<script src="report_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="report_files/libs/quarto-html/anchor.min.js"></script>
+<link href="report_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="report_files/libs/quarto-html/quarto-syntax-highlighting-dark.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="report_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="report_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="report_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="dark">
+<script src="report_files/libs/kePrint-0.0.1/kePrint.js"></script>
 
-<link href="trading_residuals_report_files/libs/lightable-0.0.1/lightable.css" rel="stylesheet">
+<link href="report_files/libs/lightable-0.0.1/lightable.css" rel="stylesheet">
 
 
   <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
@@ -113,7 +113,7 @@ window.Quarto = {
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Regression Residual Trading</h1>
+<h1 class="title">Synthetic Statistical Arbitrage</h1>
 </div>
 
 
@@ -140,20 +140,20 @@ window.Quarto = {
 <ul class="nav nav-tabs" role="tablist"><li class="nav-item" role="presentation"><a class="nav-link active" id="tabset-1-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-1-1" role="tab" aria-controls="tabset-1-1" aria-selected="true" href="">Overview</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-1-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-1-2" role="tab" aria-controls="tabset-1-2" aria-selected="false" href="">Formulation</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-1-3-tab" data-bs-toggle="tab" data-bs-target="#tabset-1-3" role="tab" aria-controls="tabset-1-3" aria-selected="false" href="">Implementation</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-1-4-tab" data-bs-toggle="tab" data-bs-target="#tabset-1-4" role="tab" aria-controls="tabset-1-4" aria-selected="false" href="">Improvements</a></li></ul>
 <div class="tab-content">
 <div id="tabset-1-1" class="tab-pane active" role="tabpanel" aria-labelledby="tabset-1-1-tab">
-<p>The foundation of this trading strategy is that traders will trade similar securities in a similar fashion. For example let’s consider two securities, who’s prices are denoted as <span class="math inline">\(S_B\)</span> and <span class="math inline">\(S_P\)</span>. We assume that traders will expect for these to move together. If <span class="math inline">\(S_B\)</span> or <span class="math inline">\(S_P\)</span> deviate from one another, we expect them to converge. This phenomena can be profited from by buying one security and shorting the other. The following strategy will tell us which security to short and which to buy and in what quantities. It will also allow for more securities to be included, which improves the model.</p>
+<p>The foundation of this trading strategy is that traders will trade similar securities in a similar fashion. For example, consider two securities, whose prices are denoted as <span class="math inline">\(S_B\)</span> and <span class="math inline">\(S_P\)</span>. We assume that traders expect these to move together. If <span class="math inline">\(S_B\)</span> or <span class="math inline">\(S_P\)</span> deviates from the other, we expect them to converge. This phenomenon can be exploited by buying one security and shorting the other. The following strategy will calculate which securities to short, which to buy, and in what quantities. It will also allow for more securities to be included, which can improve model performance.</p>
 </div>
 <div id="tabset-1-2" class="tab-pane" role="tabpanel" aria-labelledby="tabset-1-2-tab">
 <section id="relating-s_b-and-s_p" class="level3">
 <h3 class="anchored" data-anchor-id="relating-s_b-and-s_p">Relating <span class="math inline">\(S_B\)</span> and <span class="math inline">\(S_P\)</span></h3>
-<p>To describe the phenomena explained in the overview, consider two securities denoted <span class="math inline">\(S_B\)</span> and <span class="math inline">\(S_P\)</span>, where <span class="math inline">\(S_B\)</span> is the “Base security” and <span class="math inline">\(S_P\)</span> is the “Pseudo-Security”.<br>
+<p>To describe the phenomenon explained in the overview, consider two securities denoted <span class="math inline">\(S_B\)</span> and <span class="math inline">\(S_P\)</span>, where <span class="math inline">\(S_B\)</span> is the “base security” and <span class="math inline">\(S_P\)</span> is the “pseudo-security”.<br>
 Let <span class="math display">\[S_{B,t} = S_{P,t} + \phi_t\]</span> where <span class="math inline">\(\phi_t \in \mathbb{R}\)</span>.<br>
-While the base(<span class="math inline">\(S_B\)</span>) is just a security, The pseudo-security(<span class="math inline">\(S_B\)</span>) is more complex. It is a linear combination of securities that follows <span class="math inline">\(S_B\)</span>. By substituting <span class="math inline">\(S_{P,t} = \sum_{i=1}^{n} \gamma_i S_{i,t}\)</span> we get: <span class="math display">\[S_{B,t} = \sum_{i=1}^{n} \gamma_i S_{i,t} + \phi_t\]</span><br>
+While the base security (<span class="math inline">\(S_B\)</span>) is just a single asset, the pseudo-security (<span class="math inline">\(S_P\)</span>) is more complex. It is a linear combination of securities that follows <span class="math inline">\(S_B\)</span>. Thus, <span class="math inline">\(S_P\)</span> is a synthetic asset built from other securities. By substituting <span class="math inline">\(S_{P,t} = \sum_{i=1}^{n} \gamma_i S_{i,t}\)</span> we get: <span class="math display">\[S_{B,t} = \sum_{i=1}^{n} \gamma_i S_{i,t} + \phi_t\]</span><br>
 where <span class="math inline">\(\gamma_i \in \mathbb{R}\)</span>.<br>
-All <span class="math inline">\(\gamma_i\)</span> can be found using various methods. Least squares will be used here, though gradient decent could give a less overfit model.</p>
+All <span class="math inline">\(\gamma_i\)</span> can be estimated using various methods. Here, least squares will be used, though gradient descent could give a less overfit model.</p>
 </section>
 <section id="how-to-trade-phi" class="level3">
 <h3 class="anchored" data-anchor-id="how-to-trade-phi">How to trade <span class="math inline">\(\phi\)</span></h3>
-<p>Using the formula <span class="math inline">\(S_{B,t} = \sum_{i=1}^{n} \gamma_i S_{i,t} + \phi_t\)</span>, solving for <span class="math inline">\(\phi_t\)</span> gives: <span class="math display">\[\phi_t = S_{B,t} - \sum_{i=1}^{n} \gamma_i S_{i,t}\]</span> The <span class="math inline">\(\gamma_i\)</span> provides weights for each security to be bought at, as well as a weight of <span class="math inline">\(1\)</span> for <span class="math inline">\(S_B\)</span>. Each security <span class="math inline">\(S_i\)</span> will have <span class="math inline">\(\gamma_i\)</span> shares bought, negative <span class="math inline">\(\gamma_i\)</span> means going short.</p>
+<p>Using the formula <span class="math inline">\(S_{B,t} = \sum_{i=1}^{n} \gamma_i S_{i,t} + \phi_t\)</span>, solving for <span class="math inline">\(\phi_t\)</span> gives: <span class="math display">\[\phi_t = S_{B,t} - \sum_{i=1}^{n} \gamma_i S_{i,t}\]</span> The <span class="math inline">\(\gamma_i\)</span> provides weights for each security to be bought, with a weight of <span class="math inline">\(1\)</span> for <span class="math inline">\(S_B\)</span>. Each security <span class="math inline">\(S_i\)</span> will have <span class="math inline">\(\gamma_i\)</span> shares bought. A negative <span class="math inline">\(\gamma_i\)</span> indicates a short position.</p>
 </section>
 <section id="properties-of-phi" class="level3">
 <h3 class="anchored" data-anchor-id="properties-of-phi">Properties of <span class="math inline">\(\phi\)</span></h3>
@@ -266,16 +266,16 @@ All <span class="math inline">\(\gamma_i\)</span> can be found using various met
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="trading_residuals_report_files/figure-html/unnamed-chunk-2-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="report_files/figure-html/unnamed-chunk-2-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 </div>
-<p><span class="math inline">\(\phi_t\)</span> is essentially the residual for <span class="math inline">\(S_{B,t} = S_{P,t}\)</span>. If <span class="math inline">\(S_P\)</span> follows <span class="math inline">\(S_B\)</span> and they are thought to converge, then <span class="math inline">\(\phi\)</span> should be pushed toward <span class="math inline">\(0\)</span>. This would imply a Auto Regressive (AR) model. After some testing on various orders, the AR(1) model provided the best AIC, avoiding over fitting. This gives a new equation for <span class="math inline">\(\phi_t\)</span>:</p>
+<p><span class="math inline">\(\phi_t\)</span> is essentially the residual from the relationship <span class="math inline">\(S_{B,t} = S_{P,t}\)</span>. If <span class="math inline">\(S_P\)</span> follows <span class="math inline">\(S_B\)</span> and they are thought to converge, then <span class="math inline">\(\phi\)</span> should move toward <span class="math inline">\(0\)</span>. This suggests an autoregressive (AR) model. After testing various orders, the AR(1) model provided the best AIC, avoiding overfitting. This gives a new equation for <span class="math inline">\(\phi_t\)</span>:</p>
 <p><span class="math display">\[
 \phi_t = \lambda \phi_{t-1} + \sigma z_t \quad \; \lambda, \sigma \in \mathbb{R}
 \]</span> where <span class="math inline">\(z_t\)</span> is a standard normal variable.</p>
-<p>An AR(1) model can be fit to <span class="math inline">\(\phi\)</span>. This is using all 23 cryptocurrencies.</p>
+<p>An AR(1) model can be fit to <span class="math inline">\(\phi\)</span>. This model will use all 23 cryptocurrencies in the dataset.</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
@@ -339,7 +339,7 @@ All <span class="math inline">\(\gamma_i\)</span> can be found using various met
 
 </div>
 </div>
-<p>Using less securities gives parameters that inhibit predictability of <span class="math inline">\(\phi\)</span>. The following is using only Ethereum and Bitcoin.</p>
+<p>Using fewer securities gives parameters that reduce predictability of <span class="math inline">\(\phi\)</span>. The following is using only Ethereum and Bitcoin.</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
@@ -409,11 +409,11 @@ All <span class="math inline">\(\gamma_i\)</span> can be found using various met
 
 </div>
 </div>
-<p>Though <span class="math inline">\(\sigma\)</span> is similar, the increased <span class="math inline">\(\lambda\)</span> results in reduced trade profits and greater profit variance. This will will be proved in the “Expected Returns” section. Because of this, more securities are preferred as it tends to provide lower <span class="math inline">\(\lambda\)</span> and <span class="math inline">\(\sigma\)</span>.</p>
+<p>Though <span class="math inline">\(\sigma\)</span> is similar, the increased <span class="math inline">\(\lambda\)</span> results in reduced trade profits and greater profit variance. This will be proved in the “Expected Returns” section. Because of this, more securities are preferred as it tends to provide lower <span class="math inline">\(\lambda\)</span> and <span class="math inline">\(\sigma\)</span>.</p>
 </section>
 <section id="position-sizing" class="level3">
 <h3 class="anchored" data-anchor-id="position-sizing">Position Sizing</h3>
-<p>To size trades, log utility maximization will be used. This will help avoid ruin. Wealth follows the formula: <span class="math display">\[W_{t+1} = W_t (1 + f_t R_{t+1})\]</span> where <span class="math inline">\(W_{t+1}\)</span> is tomorrows wealth, <span class="math inline">\(W_t\)</span> is today’s wealth, <span class="math inline">\(R_{t+1}\)</span> is tomorrow’s return on a trade, and <span class="math inline">\(f_{t}\)</span> is the fraction of wealth used in a trade.<br>
+<p>To size trades, log utility maximization will be used. This helps to prevent ruin. Wealth evolves according to: <span class="math display">\[W_{t+1} = W_t (1 + f_t R_{t+1})\]</span> where <span class="math inline">\(W_{t+1}\)</span> is tomorrow’s wealth, <span class="math inline">\(W_t\)</span> is today’s wealth, <span class="math inline">\(R_{t+1}\)</span> is tomorrow’s return on a trade, and <span class="math inline">\(f_{t}\)</span> is the fraction of wealth used in a trade.<br>
 Using log utility maximization we need to maximize: <span class="math display">\[
 \mathbb{E}\!\left[ \ln\!\bigl(1 + f_{t} R_{t+1}\bigr) \right]
 \]</span> Substituting <span class="math display">\[
@@ -421,7 +421,7 @@ R_{t+1} = \frac{\phi_{t+1}-\phi_{t}}{C_t}
 \]</span> where <span class="math inline">\(C_{t}\)</span> is the cost of purchasing <span class="math inline">\(\phi_{t}\)</span>. We then get: <span class="math display">\[
 \mathbb{E}\!\left[ \ln\!\biggl(1 + f_{t} \frac{\phi_{t+1} - \phi_{t}}{C_{t}}\biggr) \right]
 \]</span></p>
-<p>Since <span class="math inline">\(-\infty&lt;\phi&lt;\infty\)</span> the expected value cannot be analytically evaluated. Instead, the second order Taylor approximation can be used. Higher orders can be used for greater accuracy. The new approximation is: <span class="math display">\[
+<p>Since <span class="math inline">\(-\infty&lt;\phi&lt;\infty\)</span> the expected value cannot be evaluated analytically. Instead, the second order Taylor approximation can be used. Higher orders can be used for greater accuracy. The new approximation is: <span class="math display">\[
 \begin{align}
 \mathbb{E}\!\left[\ln\!\left(1+f_{t} \frac{\phi_{t+1}-\phi_{t}}{C_{t}}\right)\right]
 &amp;\approx
@@ -433,7 +433,7 @@ R_{t+1} = \frac{\phi_{t+1}-\phi_{t}}{C_t}
 \end{align}
 \]</span> By maximizing with respect to <span class="math inline">\(f_t\)</span> we get our trade size to be: <span class="math display">\[
 f_t = -\frac{C_{t}(1-\lambda)\phi_t}{(1-\lambda)^2\phi_t^2+\sigma^2}
-\]</span> where <span class="math inline">\(C_t\)</span> is the cost of purchasing <span class="math inline">\(\phi_t\)</span>, <span class="math inline">\(\lambda\)</span> is the AR(1) coefficient, and <span class="math inline">\(\sigma\)</span> is the standard deviation of the noise. Note that a negative fraction of wealth means going short.</p>
+\]</span> where <span class="math inline">\(C_t\)</span> is the cost of purchasing <span class="math inline">\(\phi_t\)</span>, <span class="math inline">\(\lambda\)</span> is the AR(1) coefficient, and <span class="math inline">\(\sigma\)</span> is the standard deviation of the noise. Note that a negative fraction of wealth implies a short position.</p>
 </section>
 <section id="expected-returns" class="level3">
 <h3 class="anchored" data-anchor-id="expected-returns">Expected Returns</h3>
@@ -449,7 +449,7 @@ f_t = -\frac{C_{t}(1-\lambda)\phi_t}{(1-\lambda)^2\phi_t^2+\sigma^2}
 &amp;= 1
 + \frac{(1 - \lambda)^2 \phi_t^2}{(1 - \lambda)^2 \phi_t^2 + \sigma^2}
 \end{align}
-\]</span> Since this equation has <span class="math inline">\((1-\lambda)\)</span>, <span class="math inline">\(\phi_t\)</span>, and <span class="math inline">\(\sigma\)</span> all squared, it will always be positive. This means the expected return is positive, thus the trading strategy will, on average, make money.</p>
+\]</span> Since <span class="math inline">\((1-\lambda)\)</span>, <span class="math inline">\(\phi_t\)</span>, and <span class="math inline">\(\sigma\)</span> are all squared in this equation, the result is always positive. Thus, the expected return is positive, and the trading strategy will, on average, be profitable.</p>
 <p>To show the earlier claim that low <span class="math inline">\(\lambda\)</span> is better for trading, consider the derivative of the expected returns:</p>
 <p><span class="math display">\[\begin{align}
 \frac{d}{d \lambda} \mathbb{E}\!\left[1 + f_t R_{t+1} \,\middle|\, \phi_t\right]
@@ -459,7 +459,7 @@ f_t = -\frac{C_{t}(1-\lambda)\phi_t}{(1-\lambda)^2\phi_t^2+\sigma^2}
 &amp;= \frac{-2(1-\lambda)\,\phi_t^2\,\sigma^2}{\left((1-\lambda)^2 \phi_t^2 + \sigma^2\right)^2}
 \end{align}\]</span></p>
 <p>Since the denominator, <span class="math inline">\(\phi_t\)</span>, and <span class="math inline">\(\sigma\)</span> are all squared and <span class="math inline">\(\lambda&lt;1\)</span> we know this derivative will be negative. This means that as <span class="math inline">\(\lambda\)</span> decreases our expected returns increase, thus low values of <span class="math inline">\(\lambda\)</span> lead to higher returns on average.</p>
-<p>Keep in mind that all the equations used in this section only hold under the assumptions that:</p>
+<p>All equations used in this section are valid only under the assumptions that:</p>
 <ul>
 <li><span class="math inline">\(\phi\)</span> is an AR(1) process</li>
 <li><span class="math inline">\(\phi\)</span> continues to follow the same AR(1) process beyond the training data</li>
@@ -467,12 +467,12 @@ f_t = -\frac{C_{t}(1-\lambda)\phi_t}{(1-\lambda)^2\phi_t^2+\sigma^2}
 </section>
 </div>
 <div id="tabset-1-3" class="tab-pane" role="tabpanel" aria-labelledby="tabset-1-3-tab">
-<p>This section will explore the performance of the trading strategy against real data.</p>
+<p>This section will explore the performance of the trading strategy against real data.<br>
+The trade-sizing equation derived in the Formulation section can over leverage, therefore in all simulations the fraction is divided by <span class="math inline">\(20\)</span> and capped at <span class="math inline">\(\pm0.9\)</span>. This reduces risk and safeguards against outliers. This test also excludes less significant securities from the pseudo-security in an attempt to reduce overfitting.<br>
+Methods of avoiding over-leveraging and overfitting are not rigorous, but heuristically chosen.</p>
 <section id="training-data" class="level3">
 <h3 class="anchored" data-anchor-id="training-data">Training Data</h3>
-<p>First, to ensure the mathematics behind the strategy are correct, trading will be simulated on the training data. This is to check for flaws in the underlying theory.<br>
-The fraction of wealth equation derived in the Formulation section can over leverage, so the fraction is dividing by <span class="math inline">\(20\)</span> and a cap of <span class="math inline">\(\pm0.9\)</span> used. This reduces risk and safeguards against outliers. A number other than <span class="math inline">\(20\)</span> can be used to match personal risk tolerance.<br>
-This test also excludes less significant securities from the pseudo-security in attempt to reduce overfitting.</p>
+<p>First, to ensure the mathematics behind the strategy are correct, trading will be simulated on the training data. This is to ensure the underlying theory is consistent.</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
@@ -539,13 +539,13 @@ This test also excludes less significant securities from the pseudo-security in 
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="trading_residuals_report_files/figure-html/unnamed-chunk-5-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="report_files/figure-html/unnamed-chunk-5-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 </div>
-<p>This shows that the assumption of <span class="math inline">\(\phi\)</span> being a AR(1) is at least partially true, as well as confirming that the trade sizing found in the Formulation section is working.</p>
-<p>The following is the a closer look at XEM as a base. Note that even during downwards movement in the base the strategy can return a profit.</p>
+<p>This shows that the assumption of <span class="math inline">\(\phi\)</span> being an AR(1) is at least partially true, as well as confirming that the trade sizing found in the Formulation section is working.</p>
+<p>The following is a closer look at XEM as a base. Note that even during downwards movement in the base the strategy can return a profit.</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
@@ -643,7 +643,7 @@ This test also excludes less significant securities from the pseudo-security in 
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="trading_residuals_report_files/figure-html/unnamed-chunk-6-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="report_files/figure-html/unnamed-chunk-6-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
@@ -655,7 +655,7 @@ This test also excludes less significant securities from the pseudo-security in 
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="trading_residuals_report_files/figure-html/unnamed-chunk-6-2.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="report_files/figure-html/unnamed-chunk-6-2.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
@@ -754,7 +754,7 @@ This test also excludes less significant securities from the pseudo-security in 
 
 </div>
 </div>
-<p>These are the securities which pass the significance threshold. It important to remember that the insignificant securities where removed to avoid over fitting, not because they weren’t useful.</p>
+<p>Above are the securities which pass the significance threshold. It is important to remember that the insignificant securities were removed to avoid overfitting, not because they weren’t useful.</p>
 </section>
 <section id="testing-data" class="level3">
 <h3 class="anchored" data-anchor-id="testing-data">Testing Data</h3>
@@ -827,12 +827,12 @@ The trade size will be divided by 20 and capping to <span class="math inline">\(
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="trading_residuals_report_files/figure-html/unnamed-chunk-7-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="report_files/figure-html/unnamed-chunk-7-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 </div>
-<p>This is one of many ways to trade using this strategy. A sliding window can be used to find all <span class="math inline">\(\gamma_i\)</span> then trade on the very next day. Here is a example of this:</p>
+<p>This is one of many ways to trade using this strategy. A sliding window can be used to find all <span class="math inline">\(\gamma_i\)</span> then trade on the very next day. Here is an example:</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
@@ -927,20 +927,20 @@ The trade size will be divided by 20 and capping to <span class="math inline">\(
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="trading_residuals_report_files/figure-html/unnamed-chunk-8-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="report_files/figure-html/unnamed-chunk-8-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 </div>
-<p>It seems as though the theory doesn’t transfer well to real data. Perhaps the model is overfit. Other methods could be used to reduce overfitting and make a better model, such improvements will be listed in the Improvements tab.</p>
+<p>It seems as though the theory does not translate perfectly to real data. Perhaps the model is overfit. Other methods could be used to reduce overfitting and make a better model, such improvements will be listed in the Improvements tab.</p>
 </section>
 </div>
 <div id="tabset-1-4" class="tab-pane" role="tabpanel" aria-labelledby="tabset-1-4-tab">
 <ul>
 <li>Security selection more rigorous than P-value / Significance thresholds</li>
-<li>Use gradient decent to find security weights</li>
-<li>Only trade on extreme <span class="math inline">\(\phi\)</span> values</li>
-<li>Finding precise trade sizing using numerical approximation</li>
+<li>Use gradient descent to find security weights</li>
+<li>Trade only the extreme <span class="math inline">\(\phi\)</span> values</li>
+<li>Calculate precise trade sizing using numerical approximation</li>
 <li>Different Bases, e.g.&nbsp;<span class="math inline">\(S_B=0\)</span></li>
 <li>Different time intervals, e.g.&nbsp;1min, 1hr, 1wk</li>
 </ul>

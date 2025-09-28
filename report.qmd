@@ -1,38 +1,38 @@
 ---
-title: "Regression Residual Trading"
+title: "Synthetic Statistical Arbitrage"
 author: "Parker Smith"
 format: 
   html:
     theme: darkly
+    code-fold: true
 execute:
   echo: true
   warning: false
   error: false
 editor_options: 
   chunk_output_type: console
-code-fold: true
 ---
 
 
 ::: {.panel-tabset}
 
 ## Overview
-The foundation of this trading strategy is that traders will trade similar securities in a similar fashion. For example let's consider two securities, who's prices are denoted as $S_B$ and $S_P$. We assume that traders will expect for these to move together. If $S_B$ or $S_P$ deviate from one another, we expect them to converge. This phenomena can be profited from by buying one security and shorting the other. The following strategy will tell us which security to short and which to buy and in what quantities. It will also allow for more securities to be included, which improves the model.
+The foundation of this trading strategy is that traders will trade similar securities in a similar fashion. For example, consider two securities, whose prices are denoted as $S_B$ and $S_P$. We assume that traders expect these to move together. If $S_B$ or $S_P$ deviates from the other, we expect them to converge. This phenomenon can be exploited by buying one security and shorting the other. The following strategy will calculate which securities to short, which to buy, and in what quantities. It will also allow for more securities to be included, which can improve model performance.
 
 
 ## Formulation
 ### Relating $S_B$ and $S_P$
-To describe the phenomena explained in the overview, consider two securities denoted $S_B$ and $S_P$, where $S_B$ is the "Base security" and $S_P$ is the "Pseudo-Security".  
+To describe the phenomenon explained in the overview, consider two securities denoted $S_B$ and $S_P$, where $S_B$ is the "base security" and $S_P$ is the "pseudo-security".  
 Let $$S_{B,t} = S_{P,t} + \phi_t$$
 where $\phi_t \in \mathbb{R}$.  
-While the base($S_B$) is just a security, The pseudo-security($S_B$) is more complex. It is a linear combination of securities that follows $S_B$. By substituting $S_{P,t} = \sum_{i=1}^{n} \gamma_i S_{i,t}$ we get: $$S_{B,t} = \sum_{i=1}^{n} \gamma_i S_{i,t} + \phi_t$$  
+While the base security ($S_B$) is just a single asset, the pseudo-security ($S_P$) is more complex. It is a linear combination of securities that follows $S_B$. Thus, $S_P$ is a synthetic asset built from other securities. By substituting $S_{P,t} = \sum_{i=1}^{n} \gamma_i S_{i,t}$ we get: $$S_{B,t} = \sum_{i=1}^{n} \gamma_i S_{i,t} + \phi_t$$  
 where $\gamma_i \in \mathbb{R}$.  
-All $\gamma_i$ can be found using various methods. Least squares will be used here, though gradient decent could give a less overfit model.
+All $\gamma_i$ can be estimated using various methods. Here, least squares will be used, though gradient descent could give a less overfit model.
 
 
 ### How to trade $\phi$
 Using the formula $S_{B,t} = \sum_{i=1}^{n} \gamma_i S_{i,t} + \phi_t$, solving for $\phi_t$ gives: $$\phi_t = S_{B,t} - \sum_{i=1}^{n} \gamma_i S_{i,t}$$
-The $\gamma_i$ provides weights for each security to be bought at, as well as a weight of $1$ for $S_B$. Each security $S_i$ will have $\gamma_i$ shares bought, negative $\gamma_i$ means going short.
+The $\gamma_i$ provides weights for each security to be bought, with a weight of $1$ for $S_B$. Each security $S_i$ will have $\gamma_i$ shares bought. A negative $\gamma_i$ indicates a short position.
 
 ### Properties of $\phi$
 ```{r}
@@ -138,14 +138,14 @@ ggplot(phi, aes(y=phi, x=Date)) +
   scale_y_continuous(labels = scales::dollar)
   
 ```
-$\phi_t$ is essentially the residual for $S_{B,t} = S_{P,t}$. If $S_P$ follows $S_B$ and they are thought to converge, then $\phi$ should be pushed toward $0$.  This would imply a Auto Regressive (AR) model. After some testing on various orders, the AR(1) model provided the best AIC, avoiding over fitting. This gives a new equation for $\phi_t$:
+$\phi_t$ is essentially the residual from the relationship $S_{B,t} = S_{P,t}$. If $S_P$ follows $S_B$ and they are thought to converge, then $\phi$ should move toward $0$.  This suggests an autoregressive (AR) model. After testing various orders, the AR(1) model provided the best AIC, avoiding overfitting. This gives a new equation for $\phi_t$:
 
 $$
 \phi_t = \lambda \phi_{t-1} + \sigma z_t \quad \; \lambda, \sigma \in \mathbb{R}
 $$
 where $z_t$ is a standard normal variable.  
 
-An AR(1) model can be fit to $\phi$. This is using all 23 cryptocurrencies.
+An AR(1) model can be fit to $\phi$. This model will use all 23 cryptocurrencies in the dataset.
 ```{r}
 
 # Simple data frame from ARIMA(1,0,0) model results
@@ -177,7 +177,7 @@ kable(results_df, format = "html", escape = FALSE, row.names = F) %>%
   kable_styling(full_width = FALSE)
 ```
 
-Using less securities gives parameters that inhibit predictability of $\phi$. The following is using only Ethereum and Bitcoin.
+Using fewer securities gives parameters that reduce predictability of $\phi$. The following is using only Ethereum and Bitcoin.
 ```{r}
 BE_df = securities_wide[, c("ETH", "BTC")]
 model_BE = auto_lm(BE_df, 'BTC')
@@ -214,10 +214,10 @@ kable(results_df_BE, format = "html", escape = FALSE, row.names = FALSE) %>%
   kable_styling(full_width = FALSE)
 
 ```
-Though $\sigma$ is similar, the increased $\lambda$ results in reduced trade profits and greater profit variance. This will will be proved in the "Expected Returns" section. Because of this, more securities are preferred as it tends to provide lower $\lambda$ and $\sigma$.
+Though $\sigma$ is similar, the increased $\lambda$ results in reduced trade profits and greater profit variance. This will be proved in the "Expected Returns" section. Because of this, more securities are preferred as it tends to provide lower $\lambda$ and $\sigma$.
 
 ### Position Sizing
-To size trades, log utility maximization will be used. This will help avoid ruin. Wealth follows the formula: $$W_{t+1} = W_t (1 + f_t R_{t+1})$$ where $W_{t+1}$ is tomorrows wealth, $W_t$ is today's wealth, $R_{t+1}$ is tomorrow's return on a trade, and $f_{t}$ is the fraction of wealth used in a trade.  
+To size trades, log utility maximization will be used. This helps to prevent ruin. Wealth evolves according to: $$W_{t+1} = W_t (1 + f_t R_{t+1})$$ where $W_{t+1}$ is tomorrow's wealth, $W_t$ is today's wealth, $R_{t+1}$ is tomorrow's return on a trade, and $f_{t}$ is the fraction of wealth used in a trade.  
 Using log utility maximization we need to maximize: 
 $$
 \mathbb{E}\!\left[ \ln\!\bigl(1 + f_{t} R_{t+1}\bigr) \right]
@@ -231,7 +231,7 @@ $$
 \mathbb{E}\!\left[ \ln\!\biggl(1 + f_{t} \frac{\phi_{t+1} - \phi_{t}}{C_{t}}\biggr) \right]
 $$
 
-Since $-\infty<\phi<\infty$ the expected value cannot be analytically evaluated. Instead, the second order Taylor approximation can be used. Higher orders can be used for greater accuracy. The new approximation is: 
+Since $-\infty<\phi<\infty$ the expected value cannot be evaluated analytically. Instead, the second order Taylor approximation can be used. Higher orders can be used for greater accuracy. The new approximation is: 
 $$
 \begin{align}
 \mathbb{E}\!\left[\ln\!\left(1+f_{t} \frac{\phi_{t+1}-\phi_{t}}{C_{t}}\right)\right]
@@ -247,7 +247,7 @@ By maximizing with respect to $f_t$ we get our trade size to be:
 $$
 f_t = -\frac{C_{t}(1-\lambda)\phi_t}{(1-\lambda)^2\phi_t^2+\sigma^2}
 $$
-where $C_t$ is the cost of purchasing $\phi_t$, $\lambda$ is the AR(1) coefficient, and $\sigma$ is the standard deviation of the noise. Note that a negative fraction of wealth means going short. 
+where $C_t$ is the cost of purchasing $\phi_t$, $\lambda$ is the AR(1) coefficient, and $\sigma$ is the standard deviation of the noise. Note that a negative fraction of wealth implies a short position. 
 
 ### Expected Returns
 
@@ -265,7 +265,7 @@ $$
 + \frac{(1 - \lambda)^2 \phi_t^2}{(1 - \lambda)^2 \phi_t^2 + \sigma^2}
 \end{align}
 $$
-Since this equation has $(1-\lambda)$, $\phi_t$, and $\sigma$ all squared, it will always be positive. This means the expected return is positive, thus the trading strategy will, on average, make money.   
+Since $(1-\lambda)$, $\phi_t$, and $\sigma$ are all squared in this equation, the result is always positive. Thus, the expected return is positive, and the trading strategy will, on average, be profitable.   
   
 To show the earlier claim that low $\lambda$ is better for trading, consider the derivative of the expected returns:  
 
@@ -279,7 +279,7 @@ To show the earlier claim that low $\lambda$ is better for trading, consider the
 
 Since the denominator, $\phi_t$, and $\sigma$ are all squared and $\lambda<1$ we know this derivative will be negative. This means that as $\lambda$ decreases our expected returns increase, thus low values of $\lambda$ lead to higher returns on average.  
   
-Keep in mind that all the equations used in this section only hold under the assumptions that:
+All equations used in this section are valid only under the assumptions that:
 
 - $\phi$ is an AR(1) process
 - $\phi$ continues to follow the same AR(1) process beyond the training data
@@ -287,11 +287,12 @@ Keep in mind that all the equations used in this section only hold under the ass
 
 ## Implementation
 This section will explore the performance of the trading strategy against real data.  
+The trade-sizing equation derived in the Formulation section can over leverage, therefore in all simulations the fraction is divided by $20$ and capped at $\pm0.9$. This reduces risk and safeguards against outliers.
+This test also excludes less significant securities from the pseudo-security in an attempt to reduce overfitting.  
+Methods of avoiding over-leveraging and overfitting are not rigorous, but heuristically chosen.
   
 ### Training Data
-First, to ensure the mathematics behind the strategy are correct, trading will be simulated on the training data. This is to check for flaws in the underlying theory.  
-The fraction of wealth equation derived in the Formulation section can over leverage, so the fraction is dividing by $20$ and a cap of $\pm0.9$ used. This reduces risk and safeguards against outliers. A number other than $20$ can be used to match personal risk tolerance.  
-This test also excludes less significant securities from the pseudo-security in attempt to reduce overfitting.
+First, to ensure the mathematics behind the strategy are correct, trading will be simulated on the training data. This is to ensure the underlying theory is consistent.  
 ```{r}
 
 run_strategy <- function(ticker, data) {
@@ -355,9 +356,9 @@ ggplot(balance_all, aes(x = Date, y = balance, color = ticker)) +
   theme_dark_mode()
 
 ```
-This shows that the assumption of $\phi$ being a AR(1) is at least partially true, as well as confirming that the trade sizing found in the Formulation section is working.  
+This shows that the assumption of $\phi$ being an AR(1) is at least partially true, as well as confirming that the trade sizing found in the Formulation section is working.  
   
-The following is the a closer look at XEM as a base. Note that even during downwards movement in the base the strategy can return a profit.
+The following is a closer look at XEM as a base. Note that even during downwards movement in the base the strategy can return a profit.
 ```{r}
 ticker = "XEM"
 # Put PHI and Price data in the same df
@@ -457,7 +458,7 @@ coef_df <- as.data.frame(mod_sum$coefficients)
 kable(coef_df, format = "html", escape = FALSE, row.names = TRUE) %>%
   kable_styling(full_width = FALSE)
 ```
-These are the securities which pass the significance threshold. It important to remember that the insignificant securities where removed to avoid over fitting, not because they weren't useful. 
+Above are the securities which pass the significance threshold. It is important to remember that the insignificant securities were removed to avoid overfitting, not because they weren't useful. 
   
 ### Testing Data
 For a more realistic simulation a test-train-split of 80% training and 20% testing data is used. The following uses the first 80% of the data to find the weights $\gamma_i$ and the last 20% to find and trade $\phi$.   
@@ -525,7 +526,7 @@ ggplot(balance_all, aes(x = Date, y = balance, color = ticker)) +
   scale_x_date(date_breaks = "1 month", date_labels = "%b %Y") +
   theme_dark_mode()
 ```
-This is one of many ways to trade using this strategy. A sliding window can be used to find all $\gamma_i$ then trade on the very next day. Here is a example of this:
+This is one of many ways to trade using this strategy. A sliding window can be used to find all $\gamma_i$ then trade on the very next day. Here is an example:
 ```{r}
 run_strategy <- function(ticker, data, n_window = 60) {
   # Prepare data
@@ -617,15 +618,15 @@ ggplot(balance_all, aes(x = Date, y = balance, color = ticker)) +
   
 
 ```
-It seems as though the theory doesn't transfer well to real data. Perhaps the model is overfit. Other methods could be used to reduce overfitting and make a better model, such improvements will be listed in the Improvements tab.
+It seems as though the theory does not translate perfectly to real data. Perhaps the model is overfit. Other methods could be used to reduce overfitting and make a better model, such improvements will be listed in the Improvements tab.
 
 
 ## Improvements
 
 - Security selection more rigorous than P-value / Significance thresholds
-- Use gradient decent to find security weights
-- Only trade on extreme $\phi$ values
-- Finding precise trade sizing using numerical approximation
+- Use gradient descent to find security weights
+- Trade only the extreme $\phi$ values
+- Calculate precise trade sizing using numerical approximation
 - Different Bases, e.g. $S_B=0$
 - Different time intervals, e.g. 1min, 1hr, 1wk
 
