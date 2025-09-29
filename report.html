@@ -140,7 +140,7 @@ window.Quarto = {
 <ul class="nav nav-tabs" role="tablist"><li class="nav-item" role="presentation"><a class="nav-link active" id="tabset-1-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-1-1" role="tab" aria-controls="tabset-1-1" aria-selected="true" href="">Overview</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-1-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-1-2" role="tab" aria-controls="tabset-1-2" aria-selected="false" href="">Formulation</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-1-3-tab" data-bs-toggle="tab" data-bs-target="#tabset-1-3" role="tab" aria-controls="tabset-1-3" aria-selected="false" href="">Implementation</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-1-4-tab" data-bs-toggle="tab" data-bs-target="#tabset-1-4" role="tab" aria-controls="tabset-1-4" aria-selected="false" href="">Improvements</a></li></ul>
 <div class="tab-content">
 <div id="tabset-1-1" class="tab-pane active" role="tabpanel" aria-labelledby="tabset-1-1-tab">
-<p>The foundation of this trading strategy is that traders will trade similar securities in a similar fashion. For example, consider two securities, whose prices are denoted as <span class="math inline">\(S_B\)</span> and <span class="math inline">\(S_P\)</span>. We assume that traders expect these to move together. If <span class="math inline">\(S_B\)</span> or <span class="math inline">\(S_P\)</span> deviates from the other, we expect them to converge. This phenomenon can be exploited by buying one security and shorting the other. The following strategy will calculate which securities to short, which to buy, and in what quantities. It will also allow for more securities to be included, which can improve model performance.</p>
+<p>The foundation of this strategy is that traders assume similar securities will move together. For example, consider two securities, whose prices are denoted as <span class="math inline">\(S_B\)</span> and <span class="math inline">\(S_P\)</span>. If <span class="math inline">\(S_B\)</span> or <span class="math inline">\(S_P\)</span> deviates from the other, we expect them to converge. This phenomenon can be exploited by buying one security and shorting the other. The following strategy will calculate which securities to short, which to buy, and in what quantities. It will also allow for more securities to be included, which can improve model performance.</p>
 </div>
 <div id="tabset-1-2" class="tab-pane" role="tabpanel" aria-labelledby="tabset-1-2-tab">
 <section id="relating-s_b-and-s_p" class="level3">
@@ -168,7 +168,7 @@ All <span class="math inline">\(\gamma_i\)</span> can be estimated using various
 <span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(purrr)</span>
 <span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Folder containing all your CSVs</span></span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>folder_path <span class="ot">&lt;-</span> <span class="st">"C:/Users/Parker Smith/Desktop/crypto/data 2"</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>folder_path <span class="ot">&lt;-</span> <span class="st">"C:/Users/Parker Smith/Desktop/crypto/data 2"</span> <span class="co"># this can be any other collection of securities</span></span>
 <span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Get a list of all CSV files in the folder</span></span>
 <span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>files <span class="ot">&lt;-</span> <span class="fu">list.files</span>(folder_path, <span class="at">pattern =</span> <span class="st">"</span><span class="sc">\\</span><span class="st">.csv$"</span>, <span class="at">full.names =</span> <span class="cn">TRUE</span>)</span>
@@ -221,12 +221,12 @@ All <span class="math inline">\(\gamma_i\)</span> can be estimated using various
 <span id="cb1-59"><a href="#cb1-59" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(model)</span>
 <span id="cb1-60"><a href="#cb1-60" aria-hidden="true" tabindex="-1"></a>}</span>
 <span id="cb1-61"><a href="#cb1-61" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-62"><a href="#cb1-62" aria-hidden="true" tabindex="-1"></a>model <span class="ot">=</span> <span class="fu">auto_lm</span>(securities_wide[ , <span class="sc">!</span>(<span class="fu">names</span>(securities_wide) <span class="sc">%in%</span> <span class="st">"Date"</span>)], <span class="st">'BTC'</span>)</span>
+<span id="cb1-62"><a href="#cb1-62" aria-hidden="true" tabindex="-1"></a>model <span class="ot">=</span> <span class="fu">auto_lm</span>(securities_wide[ , <span class="sc">!</span>(<span class="fu">names</span>(securities_wide) <span class="sc">%in%</span> <span class="st">"Date"</span>)], <span class="st">'BTC'</span>, <span class="at">alpha =</span> <span class="dv">1</span>)</span>
 <span id="cb1-63"><a href="#cb1-63" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-64"><a href="#cb1-64" aria-hidden="true" tabindex="-1"></a>fit <span class="ot">=</span> <span class="fu">Arima</span>(model<span class="sc">$</span>residuals, <span class="at">order =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>), <span class="at">include.mean =</span> F)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
-<p>To examine <span class="math inline">\(\phi\)</span>, data from 23 cryptocurrencies will be used. The data is from 2020-10-05 to 2021-07-06.</p>
+<p>To examine <span class="math inline">\(\phi\)</span>, data from 23 cryptocurrencies will be used. The data is from 2020-10-05 to 2021-07-06. The following is <span class="math inline">\(\phi\)</span> from a base of BTC.</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
@@ -256,12 +256,13 @@ All <span class="math inline">\(\gamma_i\)</span> can be estimated using various
 <span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_hline</span>(<span class="at">yintercept =</span> <span class="dv">0</span>, <span class="at">color=</span><span class="st">'blue'</span>) <span class="sc">+</span></span>
 <span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_dark_mode</span>() <span class="sc">+</span></span>
 <span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
-<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">"Phi from 2020-10-05 to 2021-07-06"</span>,</span>
-<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="st">"Phi ($)"</span>,</span>
-<span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="cn">NULL</span></span>
-<span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
-<span id="cb2-31"><a href="#cb2-31" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_x_date</span>(<span class="at">date_breaks =</span> <span class="st">"1 month"</span>, <span class="at">date_labels =</span> <span class="st">"%b %Y"</span>) <span class="sc">+</span></span>
-<span id="cb2-32"><a href="#cb2-32" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_y_continuous</span>(<span class="at">labels =</span> scales<span class="sc">::</span>dollar)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="fu">expression</span>(phi <span class="sc">*</span> <span class="st">" from 2020-10-05 to 2021-07-06"</span>),</span>
+<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a>    <span class="at">subtitle =</span> <span class="st">"BTC Base"</span>,</span>
+<span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="fu">expression</span>(phi<span class="sc">~</span><span class="st">"($)"</span>),</span>
+<span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="cn">NULL</span></span>
+<span id="cb2-31"><a href="#cb2-31" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb2-32"><a href="#cb2-32" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_x_date</span>(<span class="at">date_breaks =</span> <span class="st">"1 month"</span>, <span class="at">date_labels =</span> <span class="st">"%b %Y"</span>) <span class="sc">+</span></span>
+<span id="cb2-33"><a href="#cb2-33" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_y_continuous</span>(<span class="at">labels =</span> scales<span class="sc">::</span>dollar)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
 <div>
@@ -271,10 +272,10 @@ All <span class="math inline">\(\gamma_i\)</span> can be estimated using various
 </div>
 </div>
 </div>
-<p><span class="math inline">\(\phi_t\)</span> is essentially the residual from the relationship <span class="math inline">\(S_{B,t} = S_{P,t}\)</span>. If <span class="math inline">\(S_P\)</span> follows <span class="math inline">\(S_B\)</span> and they are thought to converge, then <span class="math inline">\(\phi\)</span> should move toward <span class="math inline">\(0\)</span>. This suggests an autoregressive (AR) model. After testing various orders, the AR(1) model provided the best AIC, avoiding overfitting. This gives a new equation for <span class="math inline">\(\phi_t\)</span>:</p>
+<p><span class="math inline">\(\phi_t\)</span> is essentially the residual from the relationship <span class="math inline">\(S_{B,t} = S_{P,t}\)</span>. If <span class="math inline">\(S_P\)</span> follows <span class="math inline">\(S_B\)</span> and they are thought to converge, then <span class="math inline">\(\phi\)</span> should move toward <span class="math inline">\(0\)</span>, which is seen in the chart above. This suggests an autoregressive (AR) model. After testing various orders, the AR(1) model provided the best AIC, avoiding overfitting. This gives a new equation for <span class="math inline">\(\phi_t\)</span>:</p>
 <p><span class="math display">\[
-\phi_t = \lambda \phi_{t-1} + \sigma z_t \quad \; \lambda, \sigma \in \mathbb{R}
-\]</span> where <span class="math inline">\(z_t\)</span> is a standard normal variable.</p>
+\phi_t = \lambda \phi_{t-1} + \sigma z_t
+\]</span> where <span class="math inline">\(\lambda,\sigma \in \mathbb{R}\)</span> and <span class="math inline">\(z_t\)</span> is a standard normal variable.</p>
 <p>An AR(1) model can be fit to <span class="math inline">\(\phi\)</span>. This model will use all 23 cryptocurrencies in the dataset.</p>
 <div class="cell">
 <details class="code-fold">
@@ -296,16 +297,17 @@ All <span class="math inline">\(\gamma_i\)</span> can be estimated using various
 <span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a><span class="co"># Create simple results data frame</span></span>
 <span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>results_df <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
 <span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>  <span class="at">Parameter =</span> <span class="fu">c</span>(<span class="fu">names</span>(coefficients), <span class="st">"shock_sd"</span>),</span>
-<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>  <span class="at">Estimate =</span> <span class="fu">c</span>(<span class="fu">round</span>(coefficients, <span class="dv">4</span>), <span class="fu">round</span>(shock_sd, <span class="dv">4</span>)),</span>
-<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>  <span class="at">Std_Error =</span> <span class="fu">c</span>(<span class="fu">round</span>(std_errors, <span class="dv">4</span>), <span class="cn">NA</span>),</span>
-<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>  <span class="at">t_value =</span> <span class="fu">c</span>(<span class="fu">round</span>(t_values, <span class="dv">4</span>), <span class="cn">NA</span>),</span>
-<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a>  <span class="at">p_value =</span> <span class="fu">c</span>(<span class="fu">round</span>(p_values, <span class="dv">6</span>), <span class="cn">NA</span>)</span>
-<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a>results_df<span class="sc">$</span>Parameter[results_df<span class="sc">$</span>Parameter <span class="sc">==</span> <span class="st">"ar1"</span>] <span class="ot">&lt;-</span> <span class="st">"</span><span class="sc">\\</span><span class="st">(</span><span class="sc">\\</span><span class="st">lambda</span><span class="sc">\\</span><span class="st">)"</span></span>
-<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a>results_df<span class="sc">$</span>Parameter[results_df<span class="sc">$</span>Parameter <span class="sc">==</span> <span class="st">"shock_sd"</span>] <span class="ot">&lt;-</span> <span class="st">"</span><span class="sc">\\</span><span class="st">(</span><span class="sc">\\</span><span class="st">sigma</span><span class="sc">\\</span><span class="st">)"</span></span>
-<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a><span class="fu">kable</span>(results_df, <span class="at">format =</span> <span class="st">"html"</span>, <span class="at">escape =</span> <span class="cn">FALSE</span>, <span class="at">row.names =</span> F) <span class="sc">%&gt;%</span></span>
-<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable_styling</span>(<span class="at">full_width =</span> <span class="cn">FALSE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>  <span class="at">Estimate =</span> <span class="fu">c</span>(<span class="fu">round</span>(coefficients, <span class="dv">4</span>), <span class="fu">round</span>(shock_sd, <span class="dv">4</span>))</span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>  <span class="co"># ,</span></span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Std_Error = c(round(std_errors, 4), NA),</span></span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a>  <span class="co"># t_value = c(round(t_values, 4), NA),</span></span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a>  <span class="co"># p_value = c(round(p_values, 6), NA)</span></span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a>results_df<span class="sc">$</span>Parameter[results_df<span class="sc">$</span>Parameter <span class="sc">==</span> <span class="st">"ar1"</span>] <span class="ot">&lt;-</span> <span class="st">"</span><span class="sc">\\</span><span class="st">(</span><span class="sc">\\</span><span class="st">lambda</span><span class="sc">\\</span><span class="st">)"</span></span>
+<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a>results_df<span class="sc">$</span>Parameter[results_df<span class="sc">$</span>Parameter <span class="sc">==</span> <span class="st">"shock_sd"</span>] <span class="ot">&lt;-</span> <span class="st">"</span><span class="sc">\\</span><span class="st">(</span><span class="sc">\\</span><span class="st">sigma</span><span class="sc">\\</span><span class="st">)"</span></span>
+<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a><span class="fu">kable</span>(results_df, <span class="at">format =</span> <span class="st">"html"</span>, <span class="at">escape =</span> <span class="cn">FALSE</span>, <span class="at">row.names =</span> F) <span class="sc">%&gt;%</span></span>
+<span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable_styling</span>(<span class="at">full_width =</span> <span class="cn">FALSE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
 <table class="table caption-top table-sm table-striped small" data-quarto-postprocess="true">
@@ -313,25 +315,16 @@ All <span class="math inline">\(\gamma_i\)</span> can be estimated using various
 <tr class="header">
 <th style="text-align: left;" data-quarto-table-cell-role="th">Parameter</th>
 <th style="text-align: right;" data-quarto-table-cell-role="th">Estimate</th>
-<th style="text-align: right;" data-quarto-table-cell-role="th">Std_Error</th>
-<th style="text-align: right;" data-quarto-table-cell-role="th">t_value</th>
-<th style="text-align: right;" data-quarto-table-cell-role="th">p_value</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
 <td style="text-align: left;">\(\lambda\)</td>
-<td style="text-align: right;">0.5466</td>
-<td style="text-align: right;">0.0507</td>
-<td style="text-align: right;">10.7855</td>
-<td style="text-align: right;">0</td>
+<td style="text-align: right;">0.5499</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">\(\sigma\)</td>
-<td style="text-align: right;">1863.6285</td>
-<td style="text-align: right;">NA</td>
-<td style="text-align: right;">NA</td>
-<td style="text-align: right;">NA</td>
+<td style="text-align: right;">1826.4893</td>
 </tr>
 </tbody>
 </table>
@@ -363,19 +356,20 @@ All <span class="math inline">\(\gamma_i\)</span> can be estimated using various
 <span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a><span class="co"># Create simple results data frame</span></span>
 <span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>results_df_BE <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
 <span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>  <span class="at">Parameter =</span> <span class="fu">c</span>(<span class="fu">names</span>(coefficients_BE), <span class="st">"shock_sd"</span>),</span>
-<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a>  <span class="at">Estimate =</span> <span class="fu">c</span>(<span class="fu">round</span>(coefficients_BE, <span class="dv">4</span>), <span class="fu">round</span>(shock_sd_BE, <span class="dv">4</span>)),</span>
-<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a>  <span class="at">Std_Error =</span> <span class="fu">c</span>(<span class="fu">round</span>(std_errors_BE, <span class="dv">4</span>), <span class="cn">NA</span>),</span>
-<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a>  <span class="at">t_value =</span> <span class="fu">c</span>(<span class="fu">round</span>(t_values_BE, <span class="dv">4</span>), <span class="cn">NA</span>),</span>
-<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a>  <span class="at">p_value =</span> <span class="fu">c</span>(<span class="fu">round</span>(p_values_BE, <span class="dv">6</span>), <span class="cn">NA</span>)</span>
-<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a><span class="co"># Replace names with LaTeX symbols</span></span>
-<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a>results_df_BE<span class="sc">$</span>Parameter[results_df_BE<span class="sc">$</span>Parameter <span class="sc">==</span> <span class="st">"ar1"</span>] <span class="ot">&lt;-</span> <span class="st">"</span><span class="sc">\\</span><span class="st">(</span><span class="sc">\\</span><span class="st">lambda</span><span class="sc">\\</span><span class="st">)"</span></span>
-<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a>results_df_BE<span class="sc">$</span>Parameter[results_df_BE<span class="sc">$</span>Parameter <span class="sc">==</span> <span class="st">"shock_sd"</span>] <span class="ot">&lt;-</span> <span class="st">"</span><span class="sc">\\</span><span class="st">(</span><span class="sc">\\</span><span class="st">sigma</span><span class="sc">\\</span><span class="st">)"</span></span>
-<span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-31"><a href="#cb4-31" aria-hidden="true" tabindex="-1"></a><span class="co"># Render table for HTML</span></span>
-<span id="cb4-32"><a href="#cb4-32" aria-hidden="true" tabindex="-1"></a><span class="fu">kable</span>(results_df_BE, <span class="at">format =</span> <span class="st">"html"</span>, <span class="at">escape =</span> <span class="cn">FALSE</span>, <span class="at">row.names =</span> <span class="cn">FALSE</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb4-33"><a href="#cb4-33" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable_styling</span>(<span class="at">full_width =</span> <span class="cn">FALSE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a>  <span class="at">Estimate =</span> <span class="fu">c</span>(<span class="fu">round</span>(coefficients_BE, <span class="dv">4</span>), <span class="fu">round</span>(shock_sd_BE, <span class="dv">4</span>))</span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a>  <span class="co"># ,</span></span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Std_Error = c(round(std_errors_BE, 4), NA),</span></span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a>  <span class="co"># t_value = c(round(t_values_BE, 4), NA),</span></span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a>  <span class="co"># p_value = c(round(p_values_BE, 6), NA)</span></span>
+<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a><span class="co"># Replace names with LaTeX symbols</span></span>
+<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a>results_df_BE<span class="sc">$</span>Parameter[results_df_BE<span class="sc">$</span>Parameter <span class="sc">==</span> <span class="st">"ar1"</span>] <span class="ot">&lt;-</span> <span class="st">"</span><span class="sc">\\</span><span class="st">(</span><span class="sc">\\</span><span class="st">lambda</span><span class="sc">\\</span><span class="st">)"</span></span>
+<span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a>results_df_BE<span class="sc">$</span>Parameter[results_df_BE<span class="sc">$</span>Parameter <span class="sc">==</span> <span class="st">"shock_sd"</span>] <span class="ot">&lt;-</span> <span class="st">"</span><span class="sc">\\</span><span class="st">(</span><span class="sc">\\</span><span class="st">sigma</span><span class="sc">\\</span><span class="st">)"</span></span>
+<span id="cb4-31"><a href="#cb4-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-32"><a href="#cb4-32" aria-hidden="true" tabindex="-1"></a><span class="co"># Render table for HTML</span></span>
+<span id="cb4-33"><a href="#cb4-33" aria-hidden="true" tabindex="-1"></a><span class="fu">kable</span>(results_df_BE, <span class="at">format =</span> <span class="st">"html"</span>, <span class="at">escape =</span> <span class="cn">FALSE</span>, <span class="at">row.names =</span> <span class="cn">FALSE</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb4-34"><a href="#cb4-34" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable_styling</span>(<span class="at">full_width =</span> <span class="cn">FALSE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
 <table class="table caption-top table-sm table-striped small" data-quarto-postprocess="true">
@@ -383,25 +377,16 @@ All <span class="math inline">\(\gamma_i\)</span> can be estimated using various
 <tr class="header">
 <th style="text-align: left;" data-quarto-table-cell-role="th">Parameter</th>
 <th style="text-align: right;" data-quarto-table-cell-role="th">Estimate</th>
-<th style="text-align: right;" data-quarto-table-cell-role="th">Std_Error</th>
-<th style="text-align: right;" data-quarto-table-cell-role="th">t_value</th>
-<th style="text-align: right;" data-quarto-table-cell-role="th">p_value</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
 <td style="text-align: left;">\(\lambda\)</td>
 <td style="text-align: right;">0.9882</td>
-<td style="text-align: right;">0.0078</td>
-<td style="text-align: right;">127.005</td>
-<td style="text-align: right;">0</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">\(\sigma\)</td>
 <td style="text-align: right;">1887.5768</td>
-<td style="text-align: right;">NA</td>
-<td style="text-align: right;">NA</td>
-<td style="text-align: right;">NA</td>
 </tr>
 </tbody>
 </table>
@@ -415,13 +400,13 @@ All <span class="math inline">\(\gamma_i\)</span> can be estimated using various
 <h3 class="anchored" data-anchor-id="position-sizing">Position Sizing</h3>
 <p>To size trades, log utility maximization will be used. This helps to prevent ruin. Wealth evolves according to: <span class="math display">\[W_{t+1} = W_t (1 + f_t R_{t+1})\]</span> where <span class="math inline">\(W_{t+1}\)</span> is tomorrow’s wealth, <span class="math inline">\(W_t\)</span> is today’s wealth, <span class="math inline">\(R_{t+1}\)</span> is tomorrow’s return on a trade, and <span class="math inline">\(f_{t}\)</span> is the fraction of wealth used in a trade.<br>
 Using log utility maximization we need to maximize: <span class="math display">\[
-\mathbb{E}\!\left[ \ln\!\bigl(1 + f_{t} R_{t+1}\bigr) \right]
+\mathbb{E}\!\Bigl[ \ln\Bigl( 1 + f_{t} R_{t+1} \Bigr) \Bigr]
 \]</span> Substituting <span class="math display">\[
 R_{t+1} = \frac{\phi_{t+1}-\phi_{t}}{C_t}
 \]</span> where <span class="math inline">\(C_{t}\)</span> is the cost of purchasing <span class="math inline">\(\phi_{t}\)</span>. We then get: <span class="math display">\[
 \mathbb{E}\!\left[ \ln\!\biggl(1 + f_{t} \frac{\phi_{t+1} - \phi_{t}}{C_{t}}\biggr) \right]
 \]</span></p>
-<p>Since <span class="math inline">\(-\infty&lt;\phi&lt;\infty\)</span> the expected value cannot be evaluated analytically. Instead, the second order Taylor approximation can be used. Higher orders can be used for greater accuracy. The new approximation is: <span class="math display">\[
+<p>Since <span class="math inline">\(-\infty&lt;\phi&lt;\infty\)</span>, the expected value cannot be evaluated analytically. Instead, the second order Taylor approximation can be used. Higher orders can be used for greater accuracy. The new approximation is: <span class="math display">\[
 \begin{align}
 \mathbb{E}\!\left[\ln\!\left(1+f_{t} \frac{\phi_{t+1}-\phi_{t}}{C_{t}}\right)\right]
 &amp;\approx
@@ -545,7 +530,7 @@ Methods of avoiding over-leveraging and overfitting are not rigorous, but heuris
 </div>
 </div>
 <p>This shows that the assumption of <span class="math inline">\(\phi\)</span> being an AR(1) is at least partially true, as well as confirming that the trade sizing found in the Formulation section is working.</p>
-<p>The following is a closer look at XEM as a base. Note that even during downwards movement in the base the strategy can return a profit.</p>
+<p>The following is the same chart as before, but isolating the XEM base, followed by XEM’s price during the same period.</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
@@ -659,102 +644,8 @@ Methods of avoiding over-leveraging and overfitting are not rigorous, but heuris
 </figure>
 </div>
 </div>
-<details class="code-fold">
-<summary>Code</summary>
-<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>mod_sum <span class="ot">=</span> <span class="fu">summary</span>(model)</span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>coef_df <span class="ot">&lt;-</span> <span class="fu">as.data.frame</span>(mod_sum<span class="sc">$</span>coefficients)</span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="fu">kable</span>(coef_df, <span class="at">format =</span> <span class="st">"html"</span>, <span class="at">escape =</span> <span class="cn">FALSE</span>, <span class="at">row.names =</span> <span class="cn">TRUE</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable_styling</span>(<span class="at">full_width =</span> <span class="cn">FALSE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</details>
-<div class="cell-output-display">
-<table class="table caption-top table-sm table-striped small" data-quarto-postprocess="true">
-<thead>
-<tr class="header">
-<th style="text-align: left;" data-quarto-table-cell-role="th"></th>
-<th style="text-align: right;" data-quarto-table-cell-role="th">Estimate</th>
-<th style="text-align: right;" data-quarto-table-cell-role="th">Std. Error</th>
-<th style="text-align: right;" data-quarto-table-cell-role="th">t value</th>
-<th style="text-align: right;" data-quarto-table-cell-role="th">Pr(&gt;|t|)</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td style="text-align: left;">ADA</td>
-<td style="text-align: right;">0.1643243</td>
-<td style="text-align: right;">0.0284003</td>
-<td style="text-align: right;">5.785999</td>
-<td style="text-align: right;">0.0000000</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">LINK</td>
-<td style="text-align: right;">0.0035640</td>
-<td style="text-align: right;">0.0018272</td>
-<td style="text-align: right;">1.950536</td>
-<td style="text-align: right;">0.0521664</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">ETH</td>
-<td style="text-align: right;">-0.0003330</td>
-<td style="text-align: right;">0.0000258</td>
-<td style="text-align: right;">-12.904151</td>
-<td style="text-align: right;">0.0000000</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">MIOTA</td>
-<td style="text-align: right;">-0.2357942</td>
-<td style="text-align: right;">0.0388621</td>
-<td style="text-align: right;">-6.067463</td>
-<td style="text-align: right;">0.0000000</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">LTC</td>
-<td style="text-align: right;">0.0013217</td>
-<td style="text-align: right;">0.0002744</td>
-<td style="text-align: right;">4.816618</td>
-<td style="text-align: right;">0.0000025</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">XMR</td>
-<td style="text-align: right;">0.0011436</td>
-<td style="text-align: right;">0.0001652</td>
-<td style="text-align: right;">6.922358</td>
-<td style="text-align: right;">0.0000000</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">DOT</td>
-<td style="text-align: right;">0.0075211</td>
-<td style="text-align: right;">0.0015652</td>
-<td style="text-align: right;">4.805074</td>
-<td style="text-align: right;">0.0000026</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">XLM</td>
-<td style="text-align: right;">0.5516874</td>
-<td style="text-align: right;">0.1099858</td>
-<td style="text-align: right;">5.015985</td>
-<td style="text-align: right;">0.0000010</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">TRX</td>
-<td style="text-align: right;">-1.3998900</td>
-<td style="text-align: right;">0.3985262</td>
-<td style="text-align: right;">-3.512667</td>
-<td style="text-align: right;">0.0005214</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">UNI</td>
-<td style="text-align: right;">0.0054319</td>
-<td style="text-align: right;">0.0016646</td>
-<td style="text-align: right;">3.263185</td>
-<td style="text-align: right;">0.0012463</td>
-</tr>
-</tbody>
-</table>
-
-
 </div>
-</div>
-<p>Above are the securities which pass the significance threshold. It is important to remember that the insignificant securities were removed to avoid overfitting, not because they weren’t useful.</p>
+<p>XEM is a good example of this strategy’s resilience to market conditions. Even when the price drops this strategy can continue to generate profit.</p>
 </section>
 <section id="testing-data" class="level3">
 <h3 class="anchored" data-anchor-id="testing-data">Testing Data</h3>
@@ -763,66 +654,66 @@ The trade size will be divided by 20 and capping to <span class="math inline">\(
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>run_strategy <span class="ot">&lt;-</span> <span class="cf">function</span>(ticker, train, test) {</span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>  trading_df <span class="ot">&lt;-</span> test <span class="sc">%&gt;%</span> <span class="fu">select</span>(<span class="sc">-</span>Date)</span>
-<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>  train_trading_df <span class="ot">&lt;-</span> train <span class="sc">%&gt;%</span> <span class="fu">select</span>(<span class="sc">-</span>Date)</span>
-<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>  starting_money <span class="ot">&lt;-</span> <span class="dv">1000</span></span>
-<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>  balance <span class="ot">&lt;-</span> <span class="fu">c</span>(starting_money)</span>
-<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>  phi_t <span class="ot">&lt;-</span> <span class="fu">numeric</span>()</span>
-<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>  model <span class="ot">&lt;-</span> <span class="fu">auto_lm</span>(train_trading_df, ticker, <span class="fl">0.05</span>)</span>
-<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>  fit <span class="ot">&lt;-</span> <span class="fu">Arima</span>(model<span class="sc">$</span>residuals, <span class="at">order =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>), <span class="at">include.mean =</span> <span class="cn">FALSE</span>)</span>
-<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>  sigma_2 <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(fit<span class="sc">$</span>sigma2)</span>
-<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>  lambda <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(fit<span class="sc">$</span>coef)</span>
-<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>  sec_coef <span class="ot">&lt;-</span> <span class="sc">-</span>model<span class="sc">$</span>coefficients</span>
-<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>  sec_coef[[ticker]] <span class="ot">&lt;-</span> <span class="dv">1</span></span>
-<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>(<span class="fu">nrow</span>(trading_df)<span class="sc">-</span><span class="dv">1</span>)) {</span>
-<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a>    day_data <span class="ot">&lt;-</span> trading_df[i, ]</span>
-<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a>    next_day_data <span class="ot">&lt;-</span> trading_df[i<span class="sc">+</span><span class="dv">1</span>, ]</span>
-<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a>    phi <span class="ot">&lt;-</span> day_data[[ticker]] <span class="sc">-</span> <span class="fu">predict</span>(model, <span class="at">newdata =</span> day_data)</span>
-<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a>    phi_t <span class="ot">&lt;-</span> <span class="fu">c</span>(phi_t, <span class="fu">as.numeric</span>(phi))</span>
-<span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb9-24"><a href="#cb9-24" aria-hidden="true" tabindex="-1"></a>    exposure <span class="ot">&lt;-</span> <span class="fu">sum</span>(<span class="fu">abs</span>(sec_coef) <span class="sc">*</span> <span class="fu">as.numeric</span>(day_data[<span class="fu">names</span>(sec_coef)]))</span>
-<span id="cb9-25"><a href="#cb9-25" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb9-26"><a href="#cb9-26" aria-hidden="true" tabindex="-1"></a>    position_fraction <span class="ot">&lt;-</span> <span class="sc">-</span>phi<span class="sc">*</span>(<span class="dv">1</span><span class="sc">-</span>lambda) <span class="sc">/</span> (sigma_2 <span class="sc">+</span> (<span class="dv">1</span><span class="sc">-</span>lambda)<span class="sc">^</span><span class="dv">2</span><span class="sc">*</span>phi<span class="sc">^</span><span class="dv">2</span>) <span class="sc">*</span> exposure <span class="sc">/</span> <span class="dv">20</span></span>
-<span id="cb9-27"><a href="#cb9-27" aria-hidden="true" tabindex="-1"></a>    position_fraction <span class="ot">&lt;-</span> <span class="fu">pmin</span>(<span class="fu">pmax</span>(position_fraction, <span class="sc">-</span><span class="fl">0.9</span>), <span class="fl">0.9</span>)</span>
-<span id="cb9-28"><a href="#cb9-28" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb9-29"><a href="#cb9-29" aria-hidden="true" tabindex="-1"></a>    position_value <span class="ot">&lt;-</span> position_fraction <span class="sc">*</span> <span class="fu">tail</span>(balance, <span class="dv">1</span>)</span>
-<span id="cb9-30"><a href="#cb9-30" aria-hidden="true" tabindex="-1"></a>    buy_ratio <span class="ot">&lt;-</span> position_value <span class="sc">/</span> exposure</span>
-<span id="cb9-31"><a href="#cb9-31" aria-hidden="true" tabindex="-1"></a>    buy_sec_amounts <span class="ot">&lt;-</span> sec_coef <span class="sc">*</span> buy_ratio</span>
-<span id="cb9-32"><a href="#cb9-32" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb9-33"><a href="#cb9-33" aria-hidden="true" tabindex="-1"></a>    price_t0 <span class="ot">&lt;-</span> <span class="fu">sum</span>(<span class="fu">as.numeric</span>(day_data[<span class="fu">names</span>(sec_coef)] <span class="sc">*</span> buy_sec_amounts))</span>
-<span id="cb9-34"><a href="#cb9-34" aria-hidden="true" tabindex="-1"></a>    price_t1 <span class="ot">&lt;-</span> <span class="fu">sum</span>(<span class="fu">as.numeric</span>(next_day_data[<span class="fu">names</span>(sec_coef)] <span class="sc">*</span> buy_sec_amounts))</span>
-<span id="cb9-35"><a href="#cb9-35" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb9-36"><a href="#cb9-36" aria-hidden="true" tabindex="-1"></a>    profit <span class="ot">&lt;-</span> price_t1 <span class="sc">-</span> price_t0</span>
-<span id="cb9-37"><a href="#cb9-37" aria-hidden="true" tabindex="-1"></a>    balance <span class="ot">&lt;-</span> <span class="fu">c</span>(balance, <span class="fu">tail</span>(balance, <span class="dv">1</span>) <span class="sc">+</span> profit)</span>
-<span id="cb9-38"><a href="#cb9-38" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb9-39"><a href="#cb9-39" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb9-40"><a href="#cb9-40" aria-hidden="true" tabindex="-1"></a>  <span class="fu">data.frame</span>(</span>
-<span id="cb9-41"><a href="#cb9-41" aria-hidden="true" tabindex="-1"></a>    <span class="at">Date =</span> test<span class="sc">$</span>Date,</span>
-<span id="cb9-42"><a href="#cb9-42" aria-hidden="true" tabindex="-1"></a>    <span class="at">balance =</span> balance,</span>
-<span id="cb9-43"><a href="#cb9-43" aria-hidden="true" tabindex="-1"></a>    <span class="at">ticker =</span> ticker</span>
-<span id="cb9-44"><a href="#cb9-44" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb9-45"><a href="#cb9-45" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb9-46"><a href="#cb9-46" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-47"><a href="#cb9-47" aria-hidden="true" tabindex="-1"></a><span class="co"># ---- Run for multiple tickers ----</span></span>
-<span id="cb9-48"><a href="#cb9-48" aria-hidden="true" tabindex="-1"></a>tickers <span class="ot">&lt;-</span> <span class="fu">colnames</span>(securities_wide <span class="sc">%&gt;%</span> <span class="fu">select</span>(<span class="sc">-</span>Date))</span>
-<span id="cb9-49"><a href="#cb9-49" aria-hidden="true" tabindex="-1"></a>balance_all <span class="ot">&lt;-</span> <span class="fu">map_dfr</span>(tickers, <span class="sc">~</span> <span class="fu">run_strategy</span>(.x, train, test))</span>
-<span id="cb9-50"><a href="#cb9-50" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-51"><a href="#cb9-51" aria-hidden="true" tabindex="-1"></a><span class="co"># ---- Plot ----</span></span>
-<span id="cb9-52"><a href="#cb9-52" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(balance_all, <span class="fu">aes</span>(<span class="at">x =</span> Date, <span class="at">y =</span> balance, <span class="at">color =</span> ticker)) <span class="sc">+</span></span>
-<span id="cb9-53"><a href="#cb9-53" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="at">linewidth =</span> <span class="fl">0.75</span>) <span class="sc">+</span></span>
-<span id="cb9-54"><a href="#cb9-54" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Wealth over Time by Base"</span>,</span>
-<span id="cb9-55"><a href="#cb9-55" aria-hidden="true" tabindex="-1"></a>       <span class="at">subtitle =</span> <span class="st">"Starting at $1000 each | Using 80-20 split"</span>,</span>
-<span id="cb9-56"><a href="#cb9-56" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="cn">NULL</span>, <span class="at">x =</span> <span class="cn">NULL</span>,</span>
-<span id="cb9-57"><a href="#cb9-57" aria-hidden="true" tabindex="-1"></a>       <span class="at">color =</span> <span class="st">"Base"</span>) <span class="sc">+</span></span>
-<span id="cb9-58"><a href="#cb9-58" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_y_continuous</span>(<span class="at">labels =</span> scales<span class="sc">::</span>dollar) <span class="sc">+</span></span>
-<span id="cb9-59"><a href="#cb9-59" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_x_date</span>(<span class="at">date_breaks =</span> <span class="st">"1 month"</span>, <span class="at">date_labels =</span> <span class="st">"%b %Y"</span>) <span class="sc">+</span></span>
-<span id="cb9-60"><a href="#cb9-60" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_dark_mode</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>run_strategy <span class="ot">&lt;-</span> <span class="cf">function</span>(ticker, train, test) {</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>  trading_df <span class="ot">&lt;-</span> test <span class="sc">%&gt;%</span> <span class="fu">select</span>(<span class="sc">-</span>Date)</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>  train_trading_df <span class="ot">&lt;-</span> train <span class="sc">%&gt;%</span> <span class="fu">select</span>(<span class="sc">-</span>Date)</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>  starting_money <span class="ot">&lt;-</span> <span class="dv">1000</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>  balance <span class="ot">&lt;-</span> <span class="fu">c</span>(starting_money)</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>  phi_t <span class="ot">&lt;-</span> <span class="fu">numeric</span>()</span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>  model <span class="ot">&lt;-</span> <span class="fu">auto_lm</span>(train_trading_df, ticker, <span class="fl">0.05</span>)</span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>  fit <span class="ot">&lt;-</span> <span class="fu">Arima</span>(model<span class="sc">$</span>residuals, <span class="at">order =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>), <span class="at">include.mean =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>  sigma_2 <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(fit<span class="sc">$</span>sigma2)</span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>  lambda <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(fit<span class="sc">$</span>coef)</span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>  sec_coef <span class="ot">&lt;-</span> <span class="sc">-</span>model<span class="sc">$</span>coefficients</span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>  sec_coef[[ticker]] <span class="ot">&lt;-</span> <span class="dv">1</span></span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>(<span class="fu">nrow</span>(trading_df)<span class="sc">-</span><span class="dv">1</span>)) {</span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a>    day_data <span class="ot">&lt;-</span> trading_df[i, ]</span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a>    next_day_data <span class="ot">&lt;-</span> trading_df[i<span class="sc">+</span><span class="dv">1</span>, ]</span>
+<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a>    phi <span class="ot">&lt;-</span> day_data[[ticker]] <span class="sc">-</span> <span class="fu">predict</span>(model, <span class="at">newdata =</span> day_data)</span>
+<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a>    phi_t <span class="ot">&lt;-</span> <span class="fu">c</span>(phi_t, <span class="fu">as.numeric</span>(phi))</span>
+<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a>    exposure <span class="ot">&lt;-</span> <span class="fu">sum</span>(<span class="fu">abs</span>(sec_coef) <span class="sc">*</span> <span class="fu">as.numeric</span>(day_data[<span class="fu">names</span>(sec_coef)]))</span>
+<span id="cb8-25"><a href="#cb8-25" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb8-26"><a href="#cb8-26" aria-hidden="true" tabindex="-1"></a>    position_fraction <span class="ot">&lt;-</span> <span class="sc">-</span>phi<span class="sc">*</span>(<span class="dv">1</span><span class="sc">-</span>lambda) <span class="sc">/</span> (sigma_2 <span class="sc">+</span> (<span class="dv">1</span><span class="sc">-</span>lambda)<span class="sc">^</span><span class="dv">2</span><span class="sc">*</span>phi<span class="sc">^</span><span class="dv">2</span>) <span class="sc">*</span> exposure <span class="sc">/</span> <span class="dv">20</span></span>
+<span id="cb8-27"><a href="#cb8-27" aria-hidden="true" tabindex="-1"></a>    position_fraction <span class="ot">&lt;-</span> <span class="fu">pmin</span>(<span class="fu">pmax</span>(position_fraction, <span class="sc">-</span><span class="fl">0.9</span>), <span class="fl">0.9</span>)</span>
+<span id="cb8-28"><a href="#cb8-28" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb8-29"><a href="#cb8-29" aria-hidden="true" tabindex="-1"></a>    position_value <span class="ot">&lt;-</span> position_fraction <span class="sc">*</span> <span class="fu">tail</span>(balance, <span class="dv">1</span>)</span>
+<span id="cb8-30"><a href="#cb8-30" aria-hidden="true" tabindex="-1"></a>    buy_ratio <span class="ot">&lt;-</span> position_value <span class="sc">/</span> exposure</span>
+<span id="cb8-31"><a href="#cb8-31" aria-hidden="true" tabindex="-1"></a>    buy_sec_amounts <span class="ot">&lt;-</span> sec_coef <span class="sc">*</span> buy_ratio</span>
+<span id="cb8-32"><a href="#cb8-32" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb8-33"><a href="#cb8-33" aria-hidden="true" tabindex="-1"></a>    price_t0 <span class="ot">&lt;-</span> <span class="fu">sum</span>(<span class="fu">as.numeric</span>(day_data[<span class="fu">names</span>(sec_coef)] <span class="sc">*</span> buy_sec_amounts))</span>
+<span id="cb8-34"><a href="#cb8-34" aria-hidden="true" tabindex="-1"></a>    price_t1 <span class="ot">&lt;-</span> <span class="fu">sum</span>(<span class="fu">as.numeric</span>(next_day_data[<span class="fu">names</span>(sec_coef)] <span class="sc">*</span> buy_sec_amounts))</span>
+<span id="cb8-35"><a href="#cb8-35" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb8-36"><a href="#cb8-36" aria-hidden="true" tabindex="-1"></a>    profit <span class="ot">&lt;-</span> price_t1 <span class="sc">-</span> price_t0</span>
+<span id="cb8-37"><a href="#cb8-37" aria-hidden="true" tabindex="-1"></a>    balance <span class="ot">&lt;-</span> <span class="fu">c</span>(balance, <span class="fu">tail</span>(balance, <span class="dv">1</span>) <span class="sc">+</span> profit)</span>
+<span id="cb8-38"><a href="#cb8-38" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb8-39"><a href="#cb8-39" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb8-40"><a href="#cb8-40" aria-hidden="true" tabindex="-1"></a>  <span class="fu">data.frame</span>(</span>
+<span id="cb8-41"><a href="#cb8-41" aria-hidden="true" tabindex="-1"></a>    <span class="at">Date =</span> test<span class="sc">$</span>Date,</span>
+<span id="cb8-42"><a href="#cb8-42" aria-hidden="true" tabindex="-1"></a>    <span class="at">balance =</span> balance,</span>
+<span id="cb8-43"><a href="#cb8-43" aria-hidden="true" tabindex="-1"></a>    <span class="at">ticker =</span> ticker</span>
+<span id="cb8-44"><a href="#cb8-44" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb8-45"><a href="#cb8-45" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb8-46"><a href="#cb8-46" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-47"><a href="#cb8-47" aria-hidden="true" tabindex="-1"></a><span class="co"># ---- Run for multiple tickers ----</span></span>
+<span id="cb8-48"><a href="#cb8-48" aria-hidden="true" tabindex="-1"></a>tickers <span class="ot">&lt;-</span> <span class="fu">colnames</span>(securities_wide <span class="sc">%&gt;%</span> <span class="fu">select</span>(<span class="sc">-</span>Date))</span>
+<span id="cb8-49"><a href="#cb8-49" aria-hidden="true" tabindex="-1"></a>balance_all <span class="ot">&lt;-</span> <span class="fu">map_dfr</span>(tickers, <span class="sc">~</span> <span class="fu">run_strategy</span>(.x, train, test))</span>
+<span id="cb8-50"><a href="#cb8-50" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-51"><a href="#cb8-51" aria-hidden="true" tabindex="-1"></a><span class="co"># ---- Plot ----</span></span>
+<span id="cb8-52"><a href="#cb8-52" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(balance_all, <span class="fu">aes</span>(<span class="at">x =</span> Date, <span class="at">y =</span> balance, <span class="at">color =</span> ticker)) <span class="sc">+</span></span>
+<span id="cb8-53"><a href="#cb8-53" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="at">linewidth =</span> <span class="fl">0.75</span>) <span class="sc">+</span></span>
+<span id="cb8-54"><a href="#cb8-54" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Wealth over Time by Base"</span>,</span>
+<span id="cb8-55"><a href="#cb8-55" aria-hidden="true" tabindex="-1"></a>       <span class="at">subtitle =</span> <span class="st">"Starting at $1000 each | Using 80-20 split"</span>,</span>
+<span id="cb8-56"><a href="#cb8-56" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="cn">NULL</span>, <span class="at">x =</span> <span class="cn">NULL</span>,</span>
+<span id="cb8-57"><a href="#cb8-57" aria-hidden="true" tabindex="-1"></a>       <span class="at">color =</span> <span class="st">"Base"</span>) <span class="sc">+</span></span>
+<span id="cb8-58"><a href="#cb8-58" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_y_continuous</span>(<span class="at">labels =</span> scales<span class="sc">::</span>dollar) <span class="sc">+</span></span>
+<span id="cb8-59"><a href="#cb8-59" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_x_date</span>(<span class="at">date_breaks =</span> <span class="st">"1 month"</span>, <span class="at">date_labels =</span> <span class="st">"%b %Y"</span>) <span class="sc">+</span></span>
+<span id="cb8-60"><a href="#cb8-60" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_dark_mode</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
 <div>
@@ -836,93 +727,93 @@ The trade size will be divided by 20 and capping to <span class="math inline">\(
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>run_strategy <span class="ot">&lt;-</span> <span class="cf">function</span>(ticker, data, <span class="at">n_window =</span> <span class="dv">60</span>) {</span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Prepare data</span></span>
-<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>  trading_df <span class="ot">&lt;-</span> data <span class="sc">%&gt;%</span></span>
-<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(<span class="sc">-</span>Date) <span class="sc">%&gt;%</span></span>
-<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>    dplyr<span class="sc">::</span><span class="fu">ungroup</span>() <span class="sc">%&gt;%</span></span>
-<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">as.data.frame</span>()</span>
-<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">as.integer</span>(<span class="fu">nrow</span>(trading_df)) <span class="sc">&lt;=</span> (n_window <span class="sc">+</span> <span class="dv">1</span>)) {</span>
-<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">stop</span>(<span class="st">"Not enough rows in data for sliding window of size "</span>, n_window)</span>
-<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a>  starting_money <span class="ot">&lt;-</span> <span class="dv">1000</span></span>
-<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a>  balance <span class="ot">&lt;-</span> <span class="fu">c</span>(starting_money)</span>
-<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a>  phi_t <span class="ot">&lt;-</span> <span class="fu">numeric</span>()</span>
-<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Loop over days starting after first n_window days</span></span>
-<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (i <span class="cf">in</span> (n_window<span class="sc">+</span><span class="dv">1</span>)<span class="sc">:</span>(<span class="fu">nrow</span>(trading_df)<span class="sc">-</span><span class="dv">1</span>)) {</span>
-<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Sliding window of previous n_window days</span></span>
-<span id="cb10-19"><a href="#cb10-19" aria-hidden="true" tabindex="-1"></a>    window_data <span class="ot">&lt;-</span> trading_df[(i<span class="sc">-</span>n_window)<span class="sc">:</span>(i<span class="dv">-1</span>), ]</span>
-<span id="cb10-20"><a href="#cb10-20" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-21"><a href="#cb10-21" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Fit model on sliding window</span></span>
-<span id="cb10-22"><a href="#cb10-22" aria-hidden="true" tabindex="-1"></a>    model <span class="ot">&lt;-</span> <span class="fu">auto_lm</span>(window_data, ticker, <span class="fl">0.05</span>)</span>
-<span id="cb10-23"><a href="#cb10-23" aria-hidden="true" tabindex="-1"></a>    fit <span class="ot">&lt;-</span> <span class="fu">Arima</span>(model<span class="sc">$</span>residuals, <span class="at">order =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>), <span class="at">include.mean =</span> <span class="cn">FALSE</span>)</span>
-<span id="cb10-24"><a href="#cb10-24" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-25"><a href="#cb10-25" aria-hidden="true" tabindex="-1"></a>    sigma_2 <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(fit<span class="sc">$</span>sigma2)</span>
-<span id="cb10-26"><a href="#cb10-26" aria-hidden="true" tabindex="-1"></a>    lambda <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(fit<span class="sc">$</span>coef)</span>
-<span id="cb10-27"><a href="#cb10-27" aria-hidden="true" tabindex="-1"></a>    sec_coef <span class="ot">&lt;-</span> <span class="sc">-</span>model<span class="sc">$</span>coefficients</span>
-<span id="cb10-28"><a href="#cb10-28" aria-hidden="true" tabindex="-1"></a>    sec_coef[[ticker]] <span class="ot">&lt;-</span> <span class="dv">1</span></span>
-<span id="cb10-29"><a href="#cb10-29" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-30"><a href="#cb10-30" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Data for today and next day</span></span>
-<span id="cb10-31"><a href="#cb10-31" aria-hidden="true" tabindex="-1"></a>    day_data <span class="ot">&lt;-</span> trading_df[i, ]</span>
-<span id="cb10-32"><a href="#cb10-32" aria-hidden="true" tabindex="-1"></a>    next_day_data <span class="ot">&lt;-</span> trading_df[i<span class="sc">+</span><span class="dv">1</span>, ]</span>
-<span id="cb10-33"><a href="#cb10-33" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-34"><a href="#cb10-34" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Compute residual</span></span>
-<span id="cb10-35"><a href="#cb10-35" aria-hidden="true" tabindex="-1"></a>    phi <span class="ot">&lt;-</span> day_data[[ticker]] <span class="sc">-</span> <span class="fu">predict</span>(model, <span class="at">newdata =</span> day_data)</span>
-<span id="cb10-36"><a href="#cb10-36" aria-hidden="true" tabindex="-1"></a>    phi_t <span class="ot">&lt;-</span> <span class="fu">c</span>(phi_t, <span class="fu">as.numeric</span>(phi))</span>
-<span id="cb10-37"><a href="#cb10-37" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-38"><a href="#cb10-38" aria-hidden="true" tabindex="-1"></a>    exposure <span class="ot">&lt;-</span> <span class="fu">sum</span>(<span class="fu">abs</span>(sec_coef) <span class="sc">*</span> <span class="fu">as.numeric</span>(day_data[<span class="fu">names</span>(sec_coef)]))</span>
-<span id="cb10-39"><a href="#cb10-39" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-40"><a href="#cb10-40" aria-hidden="true" tabindex="-1"></a>    position_fraction <span class="ot">&lt;-</span> <span class="sc">-</span>phi<span class="sc">*</span>(<span class="dv">1</span><span class="sc">-</span>lambda) <span class="sc">/</span> (sigma_2 <span class="sc">+</span> (<span class="dv">1</span><span class="sc">-</span>lambda)<span class="sc">^</span><span class="dv">2</span><span class="sc">*</span>phi<span class="sc">^</span><span class="dv">2</span>) <span class="sc">*</span> exposure <span class="sc">/</span> <span class="dv">20</span></span>
-<span id="cb10-41"><a href="#cb10-41" aria-hidden="true" tabindex="-1"></a>    position_fraction <span class="ot">&lt;-</span> <span class="fu">pmin</span>(<span class="fu">pmax</span>(position_fraction, <span class="sc">-</span><span class="fl">0.9</span>), <span class="fl">0.9</span>)</span>
-<span id="cb10-42"><a href="#cb10-42" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-43"><a href="#cb10-43" aria-hidden="true" tabindex="-1"></a>    position_value <span class="ot">&lt;-</span> position_fraction <span class="sc">*</span> <span class="fu">tail</span>(balance, <span class="dv">1</span>)</span>
-<span id="cb10-44"><a href="#cb10-44" aria-hidden="true" tabindex="-1"></a>    buy_ratio <span class="ot">&lt;-</span> position_value <span class="sc">/</span> exposure</span>
-<span id="cb10-45"><a href="#cb10-45" aria-hidden="true" tabindex="-1"></a>    buy_sec_amounts <span class="ot">&lt;-</span> sec_coef <span class="sc">*</span> buy_ratio</span>
-<span id="cb10-46"><a href="#cb10-46" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-47"><a href="#cb10-47" aria-hidden="true" tabindex="-1"></a>    price_t0 <span class="ot">&lt;-</span> <span class="fu">sum</span>(<span class="fu">as.numeric</span>(day_data[<span class="fu">names</span>(sec_coef)] <span class="sc">*</span> buy_sec_amounts))</span>
-<span id="cb10-48"><a href="#cb10-48" aria-hidden="true" tabindex="-1"></a>    price_t1 <span class="ot">&lt;-</span> <span class="fu">sum</span>(<span class="fu">as.numeric</span>(next_day_data[<span class="fu">names</span>(sec_coef)] <span class="sc">*</span> buy_sec_amounts))</span>
-<span id="cb10-49"><a href="#cb10-49" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-50"><a href="#cb10-50" aria-hidden="true" tabindex="-1"></a>    profit <span class="ot">&lt;-</span> price_t1 <span class="sc">-</span> price_t0</span>
-<span id="cb10-51"><a href="#cb10-51" aria-hidden="true" tabindex="-1"></a>    balance <span class="ot">&lt;-</span> <span class="fu">c</span>(balance, <span class="fu">tail</span>(balance, <span class="dv">1</span>) <span class="sc">+</span> profit)</span>
-<span id="cb10-52"><a href="#cb10-52" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb10-53"><a href="#cb10-53" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-54"><a href="#cb10-54" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Return only the dates starting from first traded day</span></span>
-<span id="cb10-55"><a href="#cb10-55" aria-hidden="true" tabindex="-1"></a>  <span class="fu">data.frame</span>(</span>
-<span id="cb10-56"><a href="#cb10-56" aria-hidden="true" tabindex="-1"></a>    <span class="at">Date =</span> data<span class="sc">$</span>Date[(n_window<span class="sc">+</span><span class="dv">1</span>)<span class="sc">:</span><span class="fu">nrow</span>(trading_df)],</span>
-<span id="cb10-57"><a href="#cb10-57" aria-hidden="true" tabindex="-1"></a>    <span class="at">balance =</span> balance,</span>
-<span id="cb10-58"><a href="#cb10-58" aria-hidden="true" tabindex="-1"></a>    <span class="at">ticker =</span> ticker</span>
-<span id="cb10-59"><a href="#cb10-59" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb10-60"><a href="#cb10-60" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb10-61"><a href="#cb10-61" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-62"><a href="#cb10-62" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-63"><a href="#cb10-63" aria-hidden="true" tabindex="-1"></a><span class="co"># ---- Window sizes ----</span></span>
-<span id="cb10-64"><a href="#cb10-64" aria-hidden="true" tabindex="-1"></a>window_sizes <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">120</span>, <span class="dv">90</span>)</span>
-<span id="cb10-65"><a href="#cb10-65" aria-hidden="true" tabindex="-1"></a>tickers <span class="ot">&lt;-</span> <span class="fu">colnames</span>(securities_wide <span class="sc">%&gt;%</span> <span class="fu">select</span>(<span class="sc">-</span>Date))</span>
-<span id="cb10-66"><a href="#cb10-66" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-67"><a href="#cb10-67" aria-hidden="true" tabindex="-1"></a><span class="co"># ---- Run strategy for all tickers and all window sizes ----</span></span>
-<span id="cb10-68"><a href="#cb10-68" aria-hidden="true" tabindex="-1"></a>balance_all <span class="ot">&lt;-</span> <span class="fu">map_dfr</span>(window_sizes, <span class="cf">function</span>(w) {</span>
-<span id="cb10-69"><a href="#cb10-69" aria-hidden="true" tabindex="-1"></a>  <span class="fu">map_dfr</span>(tickers, <span class="sc">~</span> <span class="fu">run_strategy</span>(.x, securities_wide, <span class="at">n_window =</span> w)) <span class="sc">%&gt;%</span></span>
-<span id="cb10-70"><a href="#cb10-70" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">window =</span> <span class="fu">paste0</span>(w, <span class="st">" day window"</span>))</span>
-<span id="cb10-71"><a href="#cb10-71" aria-hidden="true" tabindex="-1"></a>})</span>
-<span id="cb10-72"><a href="#cb10-72" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-73"><a href="#cb10-73" aria-hidden="true" tabindex="-1"></a><span class="co"># ---- Plot with separate section for each window ----</span></span>
-<span id="cb10-74"><a href="#cb10-74" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(balance_all, <span class="fu">aes</span>(<span class="at">x =</span> Date, <span class="at">y =</span> balance, <span class="at">color =</span> ticker)) <span class="sc">+</span></span>
-<span id="cb10-75"><a href="#cb10-75" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="at">linewidth =</span> <span class="fl">0.75</span>) <span class="sc">+</span></span>
-<span id="cb10-76"><a href="#cb10-76" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span>window, <span class="at">scales =</span> <span class="st">"fixed"</span>) <span class="sc">+</span></span>
-<span id="cb10-77"><a href="#cb10-77" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Wealth over Time by Base"</span>,</span>
-<span id="cb10-78"><a href="#cb10-78" aria-hidden="true" tabindex="-1"></a>       <span class="at">subtitle =</span> <span class="st">"Starting at $1000 each  |  Sliding Window"</span>,</span>
-<span id="cb10-79"><a href="#cb10-79" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="cn">NULL</span>, <span class="at">x =</span> <span class="cn">NULL</span>,</span>
-<span id="cb10-80"><a href="#cb10-80" aria-hidden="true" tabindex="-1"></a>       <span class="at">color =</span> <span class="st">"Base"</span>) <span class="sc">+</span></span>
-<span id="cb10-81"><a href="#cb10-81" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_y_continuous</span>(<span class="at">labels =</span> scales<span class="sc">::</span>dollar, <span class="at">breaks =</span> <span class="fu">seq</span>(<span class="dv">500</span>, <span class="dv">2000</span>, <span class="dv">250</span>)) <span class="sc">+</span></span>
-<span id="cb10-82"><a href="#cb10-82" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_x_date</span>(<span class="at">date_breaks =</span> <span class="st">"2 month"</span>, <span class="at">date_labels =</span> <span class="st">"%b %Y"</span>) <span class="sc">+</span></span>
-<span id="cb10-83"><a href="#cb10-83" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_dark_mode</span>() <span class="sc">+</span></span>
-<span id="cb10-84"><a href="#cb10-84" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(</span>
-<span id="cb10-85"><a href="#cb10-85" aria-hidden="true" tabindex="-1"></a>    <span class="at">strip.text.x =</span> <span class="fu">element_text</span>(<span class="at">face =</span> <span class="st">"bold"</span>, <span class="at">size =</span> <span class="dv">12</span>,</span>
-<span id="cb10-86"><a href="#cb10-86" aria-hidden="true" tabindex="-1"></a>                                <span class="at">color =</span> <span class="st">"grey80"</span>)</span>
-<span id="cb10-87"><a href="#cb10-87" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>run_strategy <span class="ot">&lt;-</span> <span class="cf">function</span>(ticker, data, <span class="at">n_window =</span> <span class="dv">60</span>) {</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Prepare data</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>  trading_df <span class="ot">&lt;-</span> data <span class="sc">%&gt;%</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(<span class="sc">-</span>Date) <span class="sc">%&gt;%</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>    dplyr<span class="sc">::</span><span class="fu">ungroup</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">as.data.frame</span>()</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">as.integer</span>(<span class="fu">nrow</span>(trading_df)) <span class="sc">&lt;=</span> (n_window <span class="sc">+</span> <span class="dv">1</span>)) {</span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">stop</span>(<span class="st">"Not enough rows in data for sliding window of size "</span>, n_window)</span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>  starting_money <span class="ot">&lt;-</span> <span class="dv">1000</span></span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>  balance <span class="ot">&lt;-</span> <span class="fu">c</span>(starting_money)</span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>  phi_t <span class="ot">&lt;-</span> <span class="fu">numeric</span>()</span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Loop over days starting after first n_window days</span></span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (i <span class="cf">in</span> (n_window<span class="sc">+</span><span class="dv">1</span>)<span class="sc">:</span>(<span class="fu">nrow</span>(trading_df)<span class="sc">-</span><span class="dv">1</span>)) {</span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Sliding window of previous n_window days</span></span>
+<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a>    window_data <span class="ot">&lt;-</span> trading_df[(i<span class="sc">-</span>n_window)<span class="sc">:</span>(i<span class="dv">-1</span>), ]</span>
+<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Fit model on sliding window</span></span>
+<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a>    model <span class="ot">&lt;-</span> <span class="fu">auto_lm</span>(window_data, ticker, <span class="fl">0.05</span>)</span>
+<span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a>    fit <span class="ot">&lt;-</span> <span class="fu">Arima</span>(model<span class="sc">$</span>residuals, <span class="at">order =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>), <span class="at">include.mean =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb9-24"><a href="#cb9-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-25"><a href="#cb9-25" aria-hidden="true" tabindex="-1"></a>    sigma_2 <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(fit<span class="sc">$</span>sigma2)</span>
+<span id="cb9-26"><a href="#cb9-26" aria-hidden="true" tabindex="-1"></a>    lambda <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(fit<span class="sc">$</span>coef)</span>
+<span id="cb9-27"><a href="#cb9-27" aria-hidden="true" tabindex="-1"></a>    sec_coef <span class="ot">&lt;-</span> <span class="sc">-</span>model<span class="sc">$</span>coefficients</span>
+<span id="cb9-28"><a href="#cb9-28" aria-hidden="true" tabindex="-1"></a>    sec_coef[[ticker]] <span class="ot">&lt;-</span> <span class="dv">1</span></span>
+<span id="cb9-29"><a href="#cb9-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-30"><a href="#cb9-30" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Data for today and next day</span></span>
+<span id="cb9-31"><a href="#cb9-31" aria-hidden="true" tabindex="-1"></a>    day_data <span class="ot">&lt;-</span> trading_df[i, ]</span>
+<span id="cb9-32"><a href="#cb9-32" aria-hidden="true" tabindex="-1"></a>    next_day_data <span class="ot">&lt;-</span> trading_df[i<span class="sc">+</span><span class="dv">1</span>, ]</span>
+<span id="cb9-33"><a href="#cb9-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-34"><a href="#cb9-34" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Compute residual</span></span>
+<span id="cb9-35"><a href="#cb9-35" aria-hidden="true" tabindex="-1"></a>    phi <span class="ot">&lt;-</span> day_data[[ticker]] <span class="sc">-</span> <span class="fu">predict</span>(model, <span class="at">newdata =</span> day_data)</span>
+<span id="cb9-36"><a href="#cb9-36" aria-hidden="true" tabindex="-1"></a>    phi_t <span class="ot">&lt;-</span> <span class="fu">c</span>(phi_t, <span class="fu">as.numeric</span>(phi))</span>
+<span id="cb9-37"><a href="#cb9-37" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-38"><a href="#cb9-38" aria-hidden="true" tabindex="-1"></a>    exposure <span class="ot">&lt;-</span> <span class="fu">sum</span>(<span class="fu">abs</span>(sec_coef) <span class="sc">*</span> <span class="fu">as.numeric</span>(day_data[<span class="fu">names</span>(sec_coef)]))</span>
+<span id="cb9-39"><a href="#cb9-39" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-40"><a href="#cb9-40" aria-hidden="true" tabindex="-1"></a>    position_fraction <span class="ot">&lt;-</span> <span class="sc">-</span>phi<span class="sc">*</span>(<span class="dv">1</span><span class="sc">-</span>lambda) <span class="sc">/</span> (sigma_2 <span class="sc">+</span> (<span class="dv">1</span><span class="sc">-</span>lambda)<span class="sc">^</span><span class="dv">2</span><span class="sc">*</span>phi<span class="sc">^</span><span class="dv">2</span>) <span class="sc">*</span> exposure <span class="sc">/</span> <span class="dv">20</span></span>
+<span id="cb9-41"><a href="#cb9-41" aria-hidden="true" tabindex="-1"></a>    position_fraction <span class="ot">&lt;-</span> <span class="fu">pmin</span>(<span class="fu">pmax</span>(position_fraction, <span class="sc">-</span><span class="fl">0.9</span>), <span class="fl">0.9</span>)</span>
+<span id="cb9-42"><a href="#cb9-42" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-43"><a href="#cb9-43" aria-hidden="true" tabindex="-1"></a>    position_value <span class="ot">&lt;-</span> position_fraction <span class="sc">*</span> <span class="fu">tail</span>(balance, <span class="dv">1</span>)</span>
+<span id="cb9-44"><a href="#cb9-44" aria-hidden="true" tabindex="-1"></a>    buy_ratio <span class="ot">&lt;-</span> position_value <span class="sc">/</span> exposure</span>
+<span id="cb9-45"><a href="#cb9-45" aria-hidden="true" tabindex="-1"></a>    buy_sec_amounts <span class="ot">&lt;-</span> sec_coef <span class="sc">*</span> buy_ratio</span>
+<span id="cb9-46"><a href="#cb9-46" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-47"><a href="#cb9-47" aria-hidden="true" tabindex="-1"></a>    price_t0 <span class="ot">&lt;-</span> <span class="fu">sum</span>(<span class="fu">as.numeric</span>(day_data[<span class="fu">names</span>(sec_coef)] <span class="sc">*</span> buy_sec_amounts))</span>
+<span id="cb9-48"><a href="#cb9-48" aria-hidden="true" tabindex="-1"></a>    price_t1 <span class="ot">&lt;-</span> <span class="fu">sum</span>(<span class="fu">as.numeric</span>(next_day_data[<span class="fu">names</span>(sec_coef)] <span class="sc">*</span> buy_sec_amounts))</span>
+<span id="cb9-49"><a href="#cb9-49" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-50"><a href="#cb9-50" aria-hidden="true" tabindex="-1"></a>    profit <span class="ot">&lt;-</span> price_t1 <span class="sc">-</span> price_t0</span>
+<span id="cb9-51"><a href="#cb9-51" aria-hidden="true" tabindex="-1"></a>    balance <span class="ot">&lt;-</span> <span class="fu">c</span>(balance, <span class="fu">tail</span>(balance, <span class="dv">1</span>) <span class="sc">+</span> profit)</span>
+<span id="cb9-52"><a href="#cb9-52" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb9-53"><a href="#cb9-53" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-54"><a href="#cb9-54" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Return only the dates starting from first traded day</span></span>
+<span id="cb9-55"><a href="#cb9-55" aria-hidden="true" tabindex="-1"></a>  <span class="fu">data.frame</span>(</span>
+<span id="cb9-56"><a href="#cb9-56" aria-hidden="true" tabindex="-1"></a>    <span class="at">Date =</span> data<span class="sc">$</span>Date[(n_window<span class="sc">+</span><span class="dv">1</span>)<span class="sc">:</span><span class="fu">nrow</span>(trading_df)],</span>
+<span id="cb9-57"><a href="#cb9-57" aria-hidden="true" tabindex="-1"></a>    <span class="at">balance =</span> balance,</span>
+<span id="cb9-58"><a href="#cb9-58" aria-hidden="true" tabindex="-1"></a>    <span class="at">ticker =</span> ticker</span>
+<span id="cb9-59"><a href="#cb9-59" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb9-60"><a href="#cb9-60" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb9-61"><a href="#cb9-61" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-62"><a href="#cb9-62" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-63"><a href="#cb9-63" aria-hidden="true" tabindex="-1"></a><span class="co"># ---- Window sizes ----</span></span>
+<span id="cb9-64"><a href="#cb9-64" aria-hidden="true" tabindex="-1"></a>window_sizes <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">120</span>, <span class="dv">90</span>)</span>
+<span id="cb9-65"><a href="#cb9-65" aria-hidden="true" tabindex="-1"></a>tickers <span class="ot">&lt;-</span> <span class="fu">colnames</span>(securities_wide <span class="sc">%&gt;%</span> <span class="fu">select</span>(<span class="sc">-</span>Date))</span>
+<span id="cb9-66"><a href="#cb9-66" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-67"><a href="#cb9-67" aria-hidden="true" tabindex="-1"></a><span class="co"># ---- Run strategy for all tickers and all window sizes ----</span></span>
+<span id="cb9-68"><a href="#cb9-68" aria-hidden="true" tabindex="-1"></a>balance_all <span class="ot">&lt;-</span> <span class="fu">map_dfr</span>(window_sizes, <span class="cf">function</span>(w) {</span>
+<span id="cb9-69"><a href="#cb9-69" aria-hidden="true" tabindex="-1"></a>  <span class="fu">map_dfr</span>(tickers, <span class="sc">~</span> <span class="fu">run_strategy</span>(.x, securities_wide, <span class="at">n_window =</span> w)) <span class="sc">%&gt;%</span></span>
+<span id="cb9-70"><a href="#cb9-70" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">window =</span> <span class="fu">paste0</span>(w, <span class="st">" day window"</span>))</span>
+<span id="cb9-71"><a href="#cb9-71" aria-hidden="true" tabindex="-1"></a>})</span>
+<span id="cb9-72"><a href="#cb9-72" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-73"><a href="#cb9-73" aria-hidden="true" tabindex="-1"></a><span class="co"># ---- Plot with separate section for each window ----</span></span>
+<span id="cb9-74"><a href="#cb9-74" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(balance_all, <span class="fu">aes</span>(<span class="at">x =</span> Date, <span class="at">y =</span> balance, <span class="at">color =</span> ticker)) <span class="sc">+</span></span>
+<span id="cb9-75"><a href="#cb9-75" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="at">linewidth =</span> <span class="fl">0.75</span>) <span class="sc">+</span></span>
+<span id="cb9-76"><a href="#cb9-76" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span>window, <span class="at">scales =</span> <span class="st">"fixed"</span>) <span class="sc">+</span></span>
+<span id="cb9-77"><a href="#cb9-77" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Wealth over Time by Base"</span>,</span>
+<span id="cb9-78"><a href="#cb9-78" aria-hidden="true" tabindex="-1"></a>       <span class="at">subtitle =</span> <span class="st">"Starting at $1000 each  |  Sliding Window"</span>,</span>
+<span id="cb9-79"><a href="#cb9-79" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="cn">NULL</span>, <span class="at">x =</span> <span class="cn">NULL</span>,</span>
+<span id="cb9-80"><a href="#cb9-80" aria-hidden="true" tabindex="-1"></a>       <span class="at">color =</span> <span class="st">"Base"</span>) <span class="sc">+</span></span>
+<span id="cb9-81"><a href="#cb9-81" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_y_continuous</span>(<span class="at">labels =</span> scales<span class="sc">::</span>dollar, <span class="at">breaks =</span> <span class="fu">seq</span>(<span class="dv">500</span>, <span class="dv">2000</span>, <span class="dv">250</span>)) <span class="sc">+</span></span>
+<span id="cb9-82"><a href="#cb9-82" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_x_date</span>(<span class="at">date_breaks =</span> <span class="st">"2 month"</span>, <span class="at">date_labels =</span> <span class="st">"%b %Y"</span>) <span class="sc">+</span></span>
+<span id="cb9-83"><a href="#cb9-83" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_dark_mode</span>() <span class="sc">+</span></span>
+<span id="cb9-84"><a href="#cb9-84" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(</span>
+<span id="cb9-85"><a href="#cb9-85" aria-hidden="true" tabindex="-1"></a>    <span class="at">strip.text.x =</span> <span class="fu">element_text</span>(<span class="at">face =</span> <span class="st">"bold"</span>, <span class="at">size =</span> <span class="dv">12</span>,</span>
+<span id="cb9-86"><a href="#cb9-86" aria-hidden="true" tabindex="-1"></a>                                <span class="at">color =</span> <span class="st">"grey80"</span>)</span>
+<span id="cb9-87"><a href="#cb9-87" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
 <div>
@@ -932,18 +823,35 @@ The trade size will be divided by 20 and capping to <span class="math inline">\(
 </div>
 </div>
 </div>
-<p>It seems as though the theory does not translate perfectly to real data. Perhaps the model is overfit. Other methods could be used to reduce overfitting and make a better model, such improvements will be listed in the Improvements tab.</p>
+<p>While the strategy in it’s current state doesn’t perfectly translate to real-world data, there are a number of improvements that can be explored and implemented. Such improvements are explained in the Improvements section.</p>
 </section>
 </div>
 <div id="tabset-1-4" class="tab-pane" role="tabpanel" aria-labelledby="tabset-1-4-tab">
-<ul>
-<li>Security selection more rigorous than P-value / Significance thresholds</li>
-<li>Use gradient descent to find security weights</li>
-<li>Trade only the extreme <span class="math inline">\(\phi\)</span> values</li>
-<li>Calculate precise trade sizing using numerical approximation</li>
-<li>Different Bases, e.g.&nbsp;<span class="math inline">\(S_B=0\)</span></li>
-<li>Different time intervals, e.g.&nbsp;1min, 1hr, 1wk</li>
-</ul>
+<section id="finding-security-weights-with-gradient-descent" class="level3">
+<h3 class="anchored" data-anchor-id="finding-security-weights-with-gradient-descent">Finding Security Weights with Gradient Descent</h3>
+<p>Currently, linear regression finds all <span class="math inline">\(\gamma_i\)</span> to perfectly fit the training data, but this leads to poor generalization. Gradient descent provides a better alternative. It supports weight decay to reduce overfitting and, through batching, adapts to recent patterns while still learning generalizable structures.</p>
+</section>
+<section id="different-time-intervals" class="level3">
+<h3 class="anchored" data-anchor-id="different-time-intervals">Different Time Intervals</h3>
+<p>The backtesting performed in the Implementation tab used price data with a 1-day interval, but any interval (e.g., 1 minute, 1 hour, 1 week) could be applied. Each interval produces a slightly different <span class="math inline">\(\phi\)</span>. Since <span class="math inline">\(\phi_t = S_{B,t} - S_{P,t}\)</span> and <span class="math inline">\(S_B\)</span> and <span class="math inline">\(S_P\)</span> often move together, subtracting them cancels overall trends and isolates their difference, <span class="math inline">\(\phi\)</span>. Larger intervals consist only of the overall trends found in smaller intervals. Since smaller intervals do not contain these larger trends, the resulting <span class="math inline">\(\phi\)</span> values must differ.</p>
+</section>
+<section id="precise-trade-sizing" class="level3">
+<h3 class="anchored" data-anchor-id="precise-trade-sizing">Precise Trade Sizing</h3>
+<p>The trade sizing described in the Formulation tab used an approximation. Higher-order approximations could be used for greater accuracy, but an exact solution could be found numerically, maximizing returns.</p>
+</section>
+<section id="different-bases" class="level3">
+<h3 class="anchored" data-anchor-id="different-bases">Different Bases</h3>
+<p>This strategy only uses securities as bases, but theoretically anything can be used as a base. For example, a linear combination of securities or constants (e.g., <span class="math inline">\(S_B = 1\)</span>), though using non-tradable bases results in only pseudo-securities being traded.<br>
+Expanding the set of bases increases opportunities to find profitable trades.</p>
+</section>
+<section id="security-selection" class="level3">
+<h3 class="anchored" data-anchor-id="security-selection">Security Selection</h3>
+<p>To reduce overfitting, some securities are omitted based on p-values from a linear regression: any <span class="math inline">\(\gamma_i\)</span> with a p-value above a set threshold is removed, and the regression is recalculated until all remaining <span class="math inline">\(\gamma_i\)</span> fall below the threshold. However, p-values indicate the reliability of the estimate, not a security’s importance. As a result, useful securities may be excluded, suggesting the need for a more rigorous selection process.</p>
+</section>
+<section id="trade-only-extreme-phi" class="level3">
+<h3 class="anchored" data-anchor-id="trade-only-extreme-phi">Trade Only Extreme <span class="math inline">\(\phi\)</span></h3>
+<p>The trade sizing already incorporates a version of this approach: the trade size scales linearly with the value of <span class="math inline">\(\phi\)</span>. This method works to some extent, but small <span class="math inline">\(\phi\)</span> values yield an unfavorable risk-to-reward ratio. To address this, it may be advantageous to trade only when <span class="math inline">\(\phi\)</span> is large, perhaps one or two standard deviations above or below the mean.</p>
+</section>
 </div>
 </div>
 </div>

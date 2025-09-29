@@ -17,7 +17,7 @@ editor_options:
 ::: {.panel-tabset}
 
 ## Overview
-The foundation of this trading strategy is that traders will trade similar securities in a similar fashion. For example, consider two securities, whose prices are denoted as $S_B$ and $S_P$. We assume that traders expect these to move together. If $S_B$ or $S_P$ deviates from the other, we expect them to converge. This phenomenon can be exploited by buying one security and shorting the other. The following strategy will calculate which securities to short, which to buy, and in what quantities. It will also allow for more securities to be included, which can improve model performance.
+The foundation of this strategy is that traders assume similar securities will move together. For example, consider two securities, whose prices are denoted as $S_B$ and $S_P$. If $S_B$ or $S_P$ deviates from the other, we expect them to converge. This phenomenon can be exploited by buying one security and shorting the other. The following strategy will calculate which securities to short, which to buy, and in what quantities. It will also allow for more securities to be included, which can improve model performance.
 
 
 ## Formulation
@@ -44,7 +44,7 @@ library(scales)
 library(purrr)
 
 # Folder containing all your CSVs
-folder_path <- "C:/Users/Parker Smith/Desktop/crypto/data 2"
+folder_path <- "C:/Users/Parker Smith/Desktop/crypto/data 2" # this can be any other collection of securities
 
 # Get a list of all CSV files in the folder
 files <- list.files(folder_path, pattern = "\\.csv$", full.names = TRUE)
@@ -97,11 +97,11 @@ auto_lm <- function(df, response, alpha = 0.05) {
   return(model)
 }
 
-model = auto_lm(securities_wide[ , !(names(securities_wide) %in% "Date")], 'BTC')
+model = auto_lm(securities_wide[ , !(names(securities_wide) %in% "Date")], 'BTC', alpha = 1)
 
 fit = Arima(model$residuals, order = c(1, 0, 0), include.mean = F)
 ```
-To examine $\phi$, data from 23 cryptocurrencies will be used. The data is from 2020-10-05 to 2021-07-06.
+To examine $\phi$, data from 23 cryptocurrencies will be used. The data is from 2020-10-05 to 2021-07-06. The following is $\phi$ from a base of BTC.
 
 ```{r}
 theme_dark_mode <- function() {
@@ -130,20 +130,22 @@ ggplot(phi, aes(y=phi, x=Date)) +
   geom_hline(yintercept = 0, color='blue') +
   theme_dark_mode() +
   labs(
-    title = "Phi from 2020-10-05 to 2021-07-06",
-    y = "Phi ($)",
+    title = expression(phi * " from 2020-10-05 to 2021-07-06"),
+    subtitle = "BTC Base",
+    y = expression(phi~"($)"),
     x = NULL
   ) +
   scale_x_date(date_breaks = "1 month", date_labels = "%b %Y") +
   scale_y_continuous(labels = scales::dollar)
+
   
 ```
-$\phi_t$ is essentially the residual from the relationship $S_{B,t} = S_{P,t}$. If $S_P$ follows $S_B$ and they are thought to converge, then $\phi$ should move toward $0$.  This suggests an autoregressive (AR) model. After testing various orders, the AR(1) model provided the best AIC, avoiding overfitting. This gives a new equation for $\phi_t$:
+$\phi_t$ is essentially the residual from the relationship $S_{B,t} = S_{P,t}$. If $S_P$ follows $S_B$ and they are thought to converge, then $\phi$ should move toward $0$, which is seen in the chart above.  This suggests an autoregressive (AR) model. After testing various orders, the AR(1) model provided the best AIC, avoiding overfitting. This gives a new equation for $\phi_t$:
 
 $$
-\phi_t = \lambda \phi_{t-1} + \sigma z_t \quad \; \lambda, \sigma \in \mathbb{R}
+\phi_t = \lambda \phi_{t-1} + \sigma z_t
 $$
-where $z_t$ is a standard normal variable.  
+where $\lambda,\sigma \in \mathbb{R}$ and $z_t$ is a standard normal variable.  
 
 An AR(1) model can be fit to $\phi$. This model will use all 23 cryptocurrencies in the dataset.
 ```{r}
@@ -165,10 +167,11 @@ shock_sd <- sqrt(fit$sigma2)
 # Create simple results data frame
 results_df <- data.frame(
   Parameter = c(names(coefficients), "shock_sd"),
-  Estimate = c(round(coefficients, 4), round(shock_sd, 4)),
-  Std_Error = c(round(std_errors, 4), NA),
-  t_value = c(round(t_values, 4), NA),
-  p_value = c(round(p_values, 6), NA)
+  Estimate = c(round(coefficients, 4), round(shock_sd, 4))
+  # ,
+  # Std_Error = c(round(std_errors, 4), NA),
+  # t_value = c(round(t_values, 4), NA),
+  # p_value = c(round(p_values, 6), NA)
 )
 results_df$Parameter[results_df$Parameter == "ar1"] <- "\\(\\lambda\\)"
 results_df$Parameter[results_df$Parameter == "shock_sd"] <- "\\(\\sigma\\)"
@@ -199,10 +202,11 @@ shock_sd_BE <- sqrt(fit_BE$sigma2)
 # Create simple results data frame
 results_df_BE <- data.frame(
   Parameter = c(names(coefficients_BE), "shock_sd"),
-  Estimate = c(round(coefficients_BE, 4), round(shock_sd_BE, 4)),
-  Std_Error = c(round(std_errors_BE, 4), NA),
-  t_value = c(round(t_values_BE, 4), NA),
-  p_value = c(round(p_values_BE, 6), NA)
+  Estimate = c(round(coefficients_BE, 4), round(shock_sd_BE, 4))
+  # ,
+  # Std_Error = c(round(std_errors_BE, 4), NA),
+  # t_value = c(round(t_values_BE, 4), NA),
+  # p_value = c(round(p_values_BE, 6), NA)
 )
 
 # Replace names with LaTeX symbols
@@ -220,7 +224,7 @@ Though $\sigma$ is similar, the increased $\lambda$ results in reduced trade pro
 To size trades, log utility maximization will be used. This helps to prevent ruin. Wealth evolves according to: $$W_{t+1} = W_t (1 + f_t R_{t+1})$$ where $W_{t+1}$ is tomorrow's wealth, $W_t$ is today's wealth, $R_{t+1}$ is tomorrow's return on a trade, and $f_{t}$ is the fraction of wealth used in a trade.  
 Using log utility maximization we need to maximize: 
 $$
-\mathbb{E}\!\left[ \ln\!\bigl(1 + f_{t} R_{t+1}\bigr) \right]
+\mathbb{E}\!\Bigl[ \ln\Bigl( 1 + f_{t} R_{t+1} \Bigr) \Bigr]
 $$
 Substituting 
 $$
@@ -231,7 +235,7 @@ $$
 \mathbb{E}\!\left[ \ln\!\biggl(1 + f_{t} \frac{\phi_{t+1} - \phi_{t}}{C_{t}}\biggr) \right]
 $$
 
-Since $-\infty<\phi<\infty$ the expected value cannot be evaluated analytically. Instead, the second order Taylor approximation can be used. Higher orders can be used for greater accuracy. The new approximation is: 
+Since $-\infty<\phi<\infty$, the expected value cannot be evaluated analytically. Instead, the second order Taylor approximation can be used. Higher orders can be used for greater accuracy. The new approximation is: 
 $$
 \begin{align}
 \mathbb{E}\!\left[\ln\!\left(1+f_{t} \frac{\phi_{t+1}-\phi_{t}}{C_{t}}\right)\right]
@@ -358,7 +362,7 @@ ggplot(balance_all, aes(x = Date, y = balance, color = ticker)) +
 ```
 This shows that the assumption of $\phi$ being an AR(1) is at least partially true, as well as confirming that the trade sizing found in the Formulation section is working.  
   
-The following is a closer look at XEM as a base. Note that even during downwards movement in the base the strategy can return a profit.
+The following is the same chart as before, but isolating the XEM base, followed by XEM's price during the same period.
 ```{r}
 ticker = "XEM"
 # Put PHI and Price data in the same df
@@ -452,13 +456,9 @@ p3 <- ggplot(securities_wide,
 p1
 # p2
 p3
-
-mod_sum = summary(model)
-coef_df <- as.data.frame(mod_sum$coefficients)
-kable(coef_df, format = "html", escape = FALSE, row.names = TRUE) %>%
-  kable_styling(full_width = FALSE)
 ```
-Above are the securities which pass the significance threshold. It is important to remember that the insignificant securities were removed to avoid overfitting, not because they weren't useful. 
+XEM is a good example of this strategy's resilience to market conditions. Even when the price drops this strategy can continue to generate profit.  
+
   
 ### Testing Data
 For a more realistic simulation a test-train-split of 80% training and 20% testing data is used. The following uses the first 80% of the data to find the weights $\gamma_i$ and the last 20% to find and trade $\phi$.   
@@ -618,17 +618,32 @@ ggplot(balance_all, aes(x = Date, y = balance, color = ticker)) +
   
 
 ```
-It seems as though the theory does not translate perfectly to real data. Perhaps the model is overfit. Other methods could be used to reduce overfitting and make a better model, such improvements will be listed in the Improvements tab.
+While the strategy in it's current state doesn't perfectly translate to real-world data, there are a number of improvements that can be explored and implemented. Such improvements are explained in the Improvements section.
 
 
 ## Improvements
 
-- Security selection more rigorous than P-value / Significance thresholds
-- Use gradient descent to find security weights
-- Trade only the extreme $\phi$ values
-- Calculate precise trade sizing using numerical approximation
-- Different Bases, e.g. $S_B=0$
-- Different time intervals, e.g. 1min, 1hr, 1wk
+### Finding Security Weights with Gradient Descent
+Currently, linear regression finds all $\gamma_i$ to perfectly fit the training data, but this leads to poor generalization. Gradient descent provides a better alternative. It supports weight decay to reduce overfitting and, through batching, adapts to recent patterns while still learning generalizable structures.
+
+### Different Time Intervals
+The backtesting performed in the Implementation tab used price data with a 1-day interval, but any interval (e.g., 1 minute, 1 hour, 1 week) could be applied. Each interval produces a slightly different $\phi$. Since $\phi_t = S_{B,t} - S_{P,t}$ and $S_B$ and $S_P$ often move together, subtracting them cancels overall trends and isolates their difference, $\phi$. Larger intervals consist only of the overall trends found in smaller intervals. Since smaller intervals do not contain these larger trends, the resulting $\phi$ values must differ.
+
+### Precise Trade Sizing
+The trade sizing described in the Formulation tab used an approximation. Higher-order approximations could be used for greater accuracy, but an exact solution could be found numerically, maximizing returns.
+
+### Different Bases
+This strategy only uses securities as bases, but theoretically anything can be used as a base. For example, a linear combination of securities or constants (e.g., $S_B = 1$), though using non-tradable bases results in only pseudo-securities being traded.  
+Expanding the set of bases increases opportunities to find profitable trades.
+
+### Security Selection
+To reduce overfitting, some securities are omitted based on p-values from a linear regression: any $\gamma_i$ with a p-value above a set threshold is removed, and the regression is recalculated until all remaining $\gamma_i$ fall below the threshold. However, p-values indicate the reliability of the estimate, not a security’s importance. As a result, useful securities may be excluded, suggesting the need for a more rigorous selection process.
+
+### Trade Only Extreme $\phi$
+The trade sizing already incorporates a version of this approach: the trade size scales linearly with the value of $\phi$. This method works to some extent, but small $\phi$ values yield an unfavorable risk-to-reward ratio. To address this, it may be advantageous to trade only when $\phi$ is large, perhaps one or two standard deviations above or below the mean.
+
+
+
 
 
 :::
