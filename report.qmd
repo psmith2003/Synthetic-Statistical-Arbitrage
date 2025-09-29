@@ -623,18 +623,22 @@ While the strategy in it's current state doesn't perfectly translate to real-wor
 
 ## Improvements
 
+### Trading Multiple $\phi$
+Many different bases are available. Calculating a unique $\phi$ for each and trading them simultaneously increases opportunities for profitable trades.
+
 ### Finding Security Weights with Gradient Descent
 Currently, linear regression finds all $\gamma_i$ to perfectly fit the training data, but this leads to poor generalization. Gradient descent provides a better alternative. It supports weight decay to reduce overfitting and, through batching, adapts to recent patterns while still learning generalizable structures.
 
 ### Different Time Intervals
-The backtesting performed in the Implementation tab used price data with a 1-day interval, but any interval (e.g., 1 minute, 1 hour, 1 week) could be applied. Each interval produces a slightly different $\phi$. Since $\phi_t = S_{B,t} - S_{P,t}$ and $S_B$ and $S_P$ often move together, subtracting them cancels overall trends and isolates their difference, $\phi$. Larger intervals consist only of the overall trends found in smaller intervals. Since smaller intervals do not contain these larger trends, the resulting $\phi$ values must differ.
+The backtesting performed in the Implementation tab used price data with a 1-day interval, but any interval (e.g., 1 minute, 1 hour, 1 week) could be applied. Each interval produces a slightly different $\phi$. Since $\phi_t = S_{B,t} - S_{P,t}$ and $S_B$ and $S_P$ often move together, subtracting them cancels overall trends and isolates their difference, $\phi$. Larger intervals consist only of the overall trends found in smaller intervals. Since smaller intervals do not contain these larger trends, the resulting $\phi$ values must differ.  
+Trading across multiple intervals allows the strategy to exploit additional opportunities.
 
 ### Precise Trade Sizing
 The trade sizing described in the Formulation tab used an approximation. Higher-order approximations could be used for greater accuracy, but an exact solution could be found numerically, maximizing returns.
 
 ### Different Bases
 This strategy only uses securities as bases, but theoretically anything can be used as a base. For example, a linear combination of securities or constants (e.g., $S_B = 1$), though using non-tradable bases results in only pseudo-securities being traded.  
-Expanding the set of bases increases opportunities to find profitable trades.
+Using a wider set of bases creates more opportunities for profitable trades.
 
 ### Security Selection
 To reduce overfitting, some securities are omitted based on p-values from a linear regression: any $\gamma_i$ with a p-value above a set threshold is removed, and the regression is recalculated until all remaining $\gamma_i$ fall below the threshold. However, p-values indicate the reliability of the estimate, not a security’s importance. As a result, useful securities may be excluded, suggesting the need for a more rigorous selection process.

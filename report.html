@@ -827,13 +827,18 @@ The trade size will be divided by 20 and capping to <span class="math inline">\(
 </section>
 </div>
 <div id="tabset-1-4" class="tab-pane" role="tabpanel" aria-labelledby="tabset-1-4-tab">
+<section id="trading-multiple-phi" class="level3">
+<h3 class="anchored" data-anchor-id="trading-multiple-phi">Trading Multiple <span class="math inline">\(\phi\)</span></h3>
+<p>Many different bases are available. Calculating a unique <span class="math inline">\(\phi\)</span> for each and trading them simultaneously increases opportunities for profitable trades.</p>
+</section>
 <section id="finding-security-weights-with-gradient-descent" class="level3">
 <h3 class="anchored" data-anchor-id="finding-security-weights-with-gradient-descent">Finding Security Weights with Gradient Descent</h3>
 <p>Currently, linear regression finds all <span class="math inline">\(\gamma_i\)</span> to perfectly fit the training data, but this leads to poor generalization. Gradient descent provides a better alternative. It supports weight decay to reduce overfitting and, through batching, adapts to recent patterns while still learning generalizable structures.</p>
 </section>
 <section id="different-time-intervals" class="level3">
 <h3 class="anchored" data-anchor-id="different-time-intervals">Different Time Intervals</h3>
-<p>The backtesting performed in the Implementation tab used price data with a 1-day interval, but any interval (e.g., 1 minute, 1 hour, 1 week) could be applied. Each interval produces a slightly different <span class="math inline">\(\phi\)</span>. Since <span class="math inline">\(\phi_t = S_{B,t} - S_{P,t}\)</span> and <span class="math inline">\(S_B\)</span> and <span class="math inline">\(S_P\)</span> often move together, subtracting them cancels overall trends and isolates their difference, <span class="math inline">\(\phi\)</span>. Larger intervals consist only of the overall trends found in smaller intervals. Since smaller intervals do not contain these larger trends, the resulting <span class="math inline">\(\phi\)</span> values must differ.</p>
+<p>The backtesting performed in the Implementation tab used price data with a 1-day interval, but any interval (e.g., 1 minute, 1 hour, 1 week) could be applied. Each interval produces a slightly different <span class="math inline">\(\phi\)</span>. Since <span class="math inline">\(\phi_t = S_{B,t} - S_{P,t}\)</span> and <span class="math inline">\(S_B\)</span> and <span class="math inline">\(S_P\)</span> often move together, subtracting them cancels overall trends and isolates their difference, <span class="math inline">\(\phi\)</span>. Larger intervals consist only of the overall trends found in smaller intervals. Since smaller intervals do not contain these larger trends, the resulting <span class="math inline">\(\phi\)</span> values must differ.<br>
+Trading across multiple intervals allows the strategy to exploit additional opportunities.</p>
 </section>
 <section id="precise-trade-sizing" class="level3">
 <h3 class="anchored" data-anchor-id="precise-trade-sizing">Precise Trade Sizing</h3>
@@ -842,7 +847,7 @@ The trade size will be divided by 20 and capping to <span class="math inline">\(
 <section id="different-bases" class="level3">
 <h3 class="anchored" data-anchor-id="different-bases">Different Bases</h3>
 <p>This strategy only uses securities as bases, but theoretically anything can be used as a base. For example, a linear combination of securities or constants (e.g., <span class="math inline">\(S_B = 1\)</span>), though using non-tradable bases results in only pseudo-securities being traded.<br>
-Expanding the set of bases increases opportunities to find profitable trades.</p>
+Using a wider set of bases creates more opportunities for profitable trades.</p>
 </section>
 <section id="security-selection" class="level3">
 <h3 class="anchored" data-anchor-id="security-selection">Security Selection</h3>
