@@ -44,7 +44,7 @@ library(scales)
 library(purrr)
 
 # Folder containing all your CSVs
-folder_path <- "C:/Users/Parker Smith/Desktop/crypto/data 2" # this can be any other collection of securities
+folder_path <- "data\\crypto" # this can be any other collection of securities
 
 # Get a list of all CSV files in the folder
 files <- list.files(folder_path, pattern = "\\.csv$", full.names = TRUE)
