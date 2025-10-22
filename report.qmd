@@ -17,24 +17,8 @@ editor_options:
 ::: {.panel-tabset}
 
 ## Overview
-The foundation of this strategy is that traders assume similar securities will move together. For example, consider two securities, whose prices are denoted as $S_B$ and $S_P$. If $S_B$ or $S_P$ deviates from the other, we expect them to converge. This phenomenon can be exploited by buying one security and shorting the other. The following strategy will calculate which securities to short, which to buy, and in what quantities. It will also allow for more securities to be included, which can improve model performance.
-
-
-## Formulation
-### Relating $S_B$ and $S_P$
-To describe the phenomenon explained in the overview, consider two securities denoted $S_B$ and $S_P$, where $S_B$ is the "base security" and $S_P$ is the "pseudo-security".  
-Let $$S_{B,t} = S_{P,t} + \phi_t$$
-where $\phi_t \in \mathbb{R}$.  
-While the base security ($S_B$) is just a single asset, the pseudo-security ($S_P$) is more complex. It is a linear combination of securities that follows $S_B$. Thus, $S_P$ is a synthetic asset built from other securities. By substituting $S_{P,t} = \sum_{i=1}^{n} \gamma_i S_{i,t}$ we get: $$S_{B,t} = \sum_{i=1}^{n} \gamma_i S_{i,t} + \phi_t$$  
-where $\gamma_i \in \mathbb{R}$.  
-All $\gamma_i$ can be estimated using various methods. Here, least squares will be used, though gradient descent could give a less overfit model.
-
-
-### How to trade $\phi$
-Using the formula $S_{B,t} = \sum_{i=1}^{n} \gamma_i S_{i,t} + \phi_t$, solving for $\phi_t$ gives: $$\phi_t = S_{B,t} - \sum_{i=1}^{n} \gamma_i S_{i,t}$$
-The $\gamma_i$ provides weights for each security to be bought, with a weight of $1$ for $S_B$. Each security $S_i$ will have $\gamma_i$ shares bought. A negative $\gamma_i$ indicates a short position.
-
-### Properties of $\phi$
+The foundation of this strategy is that traders assume similar securities will move together. For example, consider two securities, whose prices are denoted as $S_B$ and $S_P$. If $S_B$ or $S_P$ deviates from the other, we expect them to converge. This phenomenon can be exploited by buying one security and shorting the other. The following strategy will calculate which securities to short, which to buy, and in what quantities. It will also allow for more securities to be included, which can improve model performance.  
+Below is a example of the synthetic "asset" traded using this strategy.
 ```{r}
 library(tidyverse)
 library(forecast)
@@ -100,10 +84,9 @@ auto_lm <- function(df, response, alpha = 0.05) {
 model = auto_lm(securities_wide[ , !(names(securities_wide) %in% "Date")], 'BTC', alpha = 1)
 
 fit = Arima(model$residuals, order = c(1, 0, 0), include.mean = F)
-```
-To examine $\phi$, data from 23 cryptocurrencies will be used. The data is from 2020-10-05 to 2021-07-06. The following is $\phi$ from a base of BTC.
 
-```{r}
+
+
 theme_dark_mode <- function() {
   theme_minimal(base_family = "sans") +
     theme(
@@ -122,6 +105,44 @@ theme_dark_mode <- function() {
 }
 
 
+phi = data.frame(phi = model$residuals,
+                 Date = securities_wide$Date)
+
+ggplot(phi, aes(y=phi, x=Date)) +
+  geom_line(color="#999999", linewidth=.75) +
+  geom_hline(yintercept = 0, color='blue') +
+  theme_dark_mode() +
+  labs(
+    title = expression(phi * " from 2020-10-05 to 2021-07-06"),
+    subtitle = "BTC Base",
+    y = expression(phi~"($)"),
+    x = NULL
+  ) +
+  scale_x_date(date_breaks = "1 month", date_labels = "%b %Y") +
+  scale_y_continuous(labels = scales::dollar)
+
+  
+```
+
+
+## Formulation
+### Relating $S_B$ and $S_P$
+To describe the phenomenon explained in the overview, consider two securities denoted $S_B$ and $S_P$, where $S_B$ is the "base security" and $S_P$ is the "pseudo-security".  
+Let $$S_{B,t} = S_{P,t} + \phi_t$$
+where $\phi_t \in \mathbb{R}$.  
+While the base security ($S_B$) is just a single asset, the pseudo-security ($S_P$) is more complex. It is a linear combination of securities that follows $S_B$. Thus, $S_P$ is a synthetic asset built from other securities. By substituting $S_{P,t} = \sum_{i=1}^{n} \gamma_i S_{i,t}$ we get: $$S_{B,t} = \sum_{i=1}^{n} \gamma_i S_{i,t} + \phi_t$$  
+where $\gamma_i \in \mathbb{R}$.  
+All $\gamma_i$ can be estimated using various methods. Here, least squares will be used, though gradient descent could give a less overfit model.
+
+
+### How to trade $\phi$
+Using the formula $S_{B,t} = \sum_{i=1}^{n} \gamma_i S_{i,t} + \phi_t$, solving for $\phi_t$ gives: $$\phi_t = S_{B,t} - \sum_{i=1}^{n} \gamma_i S_{i,t}$$
+The $\gamma_i$ provides weights for each security to be bought, with a weight of $1$ for $S_B$. Each security $S_i$ will have $\gamma_i$ shares bought. A negative $\gamma_i$ indicates a short position.
+
+### Properties of $\phi$
+To examine $\phi$, data from 23 cryptocurrencies will be used. The data is from 2020-10-05 to 2021-07-06. The following is $\phi$ from a base of BTC.
+
+```{r}
 phi = data.frame(phi = model$residuals,
                  Date = securities_wide$Date)
 
